@@ -110,14 +110,18 @@ public class Heap {
 	 */
 	public void setheap(HeapObject[] array, int n) {
 		int j = 1;
-		boolean b = true;
+		while(j < n) {
+			inheap(array,array[j+1],j);
+			j++;
+		}		
+		/*boolean b = true;
 		while(b) {
 			inheap(array,array[j+1],j);
 			j++;
 			if(j >= n) {
 				b = false;
 			}
-		}
+		}*/
 	}
 	
 

@@ -9,12 +9,12 @@ public class IncompleteNode implements Serializable{
 
 	private static final long serialVersionUID = -4896887724692721954L;
 	public long id;
-	public float lat;
-	public float lon;
+	public double lat;
+	public double lon;
 	
-	public IncompleteNode(long id, float lat, float lon) {
+	public IncompleteNode(long id, double lat2, double lon2) {
 		this.id = id;
-		this.lat = lat;
-		this.lon = lon;
+		this.lat = lat2;
+		this.lon = lon2;
 	}
 }

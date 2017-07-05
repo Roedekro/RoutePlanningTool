@@ -12,9 +12,10 @@ public class IncompleteEdge implements Serializable {
 	public long nodeID2;
 	public String type;
 	public boolean oneway = false;
-	public float lat; // lat coordinate of the first node we look up. This way we can compute the distance
+	public double lat; // lat coordinate of the first node we look up. This way we can compute the distance
 					// between the two nodes when we add the incomplete edge to a node.
-	public float lon; // As above.
+	public double lon; // As above.
+	public int distance; // meters
 	
 	public IncompleteEdge(long id1, long id2) {
 		nodeID1 = id1;
@@ -25,6 +26,13 @@ public class IncompleteEdge implements Serializable {
 		nodeID1 = id1;
 		nodeID2 = id2;
 		this.type = type;
+	}
+	
+	public IncompleteEdge(long id1, long id2, String type, int distance) {
+		nodeID1 = id1;
+		nodeID2 = id2;
+		this.type = type;
+		this.distance = distance;
 	}
 	
 	public IncompleteEdge(long id1, long id2, String type, boolean oneway) {

@@ -1,13 +1,16 @@
+import java.io.Serializable;
+
 /**
  * Edge in a node pointing to another node.
  * @author Martin
  *
  */
-public class Edge {
+public class Edge implements Serializable{
 
+	private static final long serialVersionUID = 5272733557733648123L;
 	public long nodeID;
 	public String type;
-	public int distance;
+	public int distance; // meters
 	
 	/**
 	 * 

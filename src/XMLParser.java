@@ -47,7 +47,7 @@ public class XMLParser {
 		XMLInputFactory xif = XMLInputFactory.newInstance();
 		XMLEventReader reader = xif.createXMLEventReader(is);
 		long id = 0;
-		float lon = 0, lat = 0;
+		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
@@ -64,10 +64,10 @@ public class XMLParser {
 							id = Long.parseLong(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lat")) {
-							lat = Float.parseFloat(attribute.getValue());
+							lat = Double.parseDouble(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lon")) {
-							lon = Float.parseFloat(attribute.getValue());
+							lon = Double.parseDouble(attribute.getValue());
 						}						
 					}
 				}
@@ -357,9 +357,12 @@ public class XMLParser {
 				else if(type.equalsIgnoreCase("way")) {
 					insideWay = false;
 					boolean filter = false;
-					for(int i = 0; i < filters.size(); i++) {
-						if(v.equalsIgnoreCase(filters.get(i))) {
-							filter = true;
+					if(edgeList.size() > 0) {
+						String edgeType = edgeList.get(0).type;
+						for(int i = 0; i < filters.size(); i++) {
+							if(edgeType.equalsIgnoreCase(filters.get(i))) {
+								filter = true;
+							}
 						}
 					}
 					if(filter) {
@@ -488,9 +491,12 @@ public class XMLParser {
 				else if(type.equalsIgnoreCase("way")) {
 					insideWay = false;
 					boolean filter = false;
-					for(int i = 0; i < filters.size(); i++) {
-						if(v.equalsIgnoreCase(filters.get(i))) {
-							filter = true;
+					if(edgeList.size() > 0) {
+						String edgeType = edgeList.get(0).type;
+						for(int i = 0; i < filters.size(); i++) {
+							if(edgeType.equalsIgnoreCase(filters.get(i))) {
+								filter = true;
+							}
 						}
 					}
 					if(filter) {

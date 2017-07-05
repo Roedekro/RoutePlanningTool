@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
@@ -5,17 +6,18 @@ import java.util.ArrayList;
  * @author Martin
  *
  */
-public class Node {
+public class Node implements Serializable {
 
+	private static final long serialVersionUID = -3416046260638920518L;
 	public long id;
-	public float lat;
-	public float lon;
+	public double lat;
+	public double lon;
 	public ArrayList<Edge> edges;
 	
-	public Node(long id, float lat, float lon) {
+	public Node(long id, double lat2, double lon2) {
 		this.id = id;
-		this.lat = lat;
-		this.lon = lon;
+		this.lat = lat2;
+		this.lon = lon2;
 		edges = new ArrayList<Edge>();
 	}
 	
