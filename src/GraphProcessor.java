@@ -141,7 +141,7 @@ public class GraphProcessor {
 				// If not oneway add a copy with switched nodeID1 and nodeID2
 				if(!edge.oneway) {
 					try {
-						out.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance));
+						out.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

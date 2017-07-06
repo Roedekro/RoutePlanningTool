@@ -50,6 +50,7 @@ public class XMLParser {
 		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
+		long firstWayNode = 0;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
 		while(reader.hasNext()) {
 			XMLEvent event = reader.nextEvent();
@@ -80,6 +81,7 @@ public class XMLParser {
 					if(insideWay) {
 						long val = Long.parseLong(((Attribute)start.getAttributes().next()).getValue());
 						if(lastWayNode == 0) {
+							firstWayNode = val;
 							lastWayNode = val;
 						}
 						else {
@@ -105,8 +107,18 @@ public class XMLParser {
 									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
-									for(int i = 0; i < edgeList.size(); i++) {
-										edgeList.get(i).oneway = true;
+									if(v.equalsIgnoreCase("true")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("junction")) {
+									if(v.equalsIgnoreCase("roundabout")) {
+										edgeList.add(new IncompleteEdge(lastWayNode, firstWayNode, edgeList.get(0).type));
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
 									}
 								}
 							}
@@ -156,8 +168,8 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException
 	 */
-	public void parseAndBox(String input, String nodeOutput, String edgeOutput, int B, long latMin,
-			long latMax, long lonMin, long lonMax) throws XMLStreamException, IOException {
+	public void parseAndBox(String input, String nodeOutput, String edgeOutput, int B, double latMin,
+			double latMax, double lonMin, double lonMax) throws XMLStreamException, IOException {
 		
 		ObjectOutputStream outN = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodeOutput),B));
 		ObjectOutputStream outE = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(edgeOutput),B));
@@ -165,9 +177,10 @@ public class XMLParser {
 		XMLInputFactory xif = XMLInputFactory.newInstance();
 		XMLEventReader reader = xif.createXMLEventReader(is);
 		long id = 0;
-		float lon = 0, lat = 0;
+		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
+		long firstWayNode = 0;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
 		while(reader.hasNext()) {
 			XMLEvent event = reader.nextEvent();
@@ -182,10 +195,10 @@ public class XMLParser {
 							id = Long.parseLong(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lat")) {
-							lat = Float.parseFloat(attribute.getValue());
+							lat = Double.parseDouble(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lon")) {
-							lon = Float.parseFloat(attribute.getValue());
+							lon = Double.parseDouble(attribute.getValue());
 						}						
 					}
 				}
@@ -198,6 +211,7 @@ public class XMLParser {
 					if(insideWay) {
 						long val = Long.parseLong(((Attribute)start.getAttributes().next()).getValue());
 						if(lastWayNode == 0) {
+							firstWayNode = val;
 							lastWayNode = val;
 						}
 						else {
@@ -223,8 +237,18 @@ public class XMLParser {
 									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
-									for(int i = 0; i < edgeList.size(); i++) {
-										edgeList.get(i).oneway = true;
+									if(v.equalsIgnoreCase("true")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("junction")) {
+									if(v.equalsIgnoreCase("roundabout")) {
+										edgeList.add(new IncompleteEdge(lastWayNode, firstWayNode, edgeList.get(0).type));
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
 									}
 								}
 							}
@@ -282,9 +306,10 @@ public class XMLParser {
 		XMLInputFactory xif = XMLInputFactory.newInstance();
 		XMLEventReader reader = xif.createXMLEventReader(is);
 		long id = 0;
-		float lon = 0, lat = 0;
+		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
+		long firstWayNode = 0;
 		String v = null;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
 		while(reader.hasNext()) {
@@ -300,10 +325,10 @@ public class XMLParser {
 							id = Long.parseLong(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lat")) {
-							lat = Float.parseFloat(attribute.getValue());
+							lat = Double.parseDouble(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lon")) {
-							lon = Float.parseFloat(attribute.getValue());
+							lon = Double.parseDouble(attribute.getValue());
 						}						
 					}
 				}
@@ -316,6 +341,7 @@ public class XMLParser {
 					if(insideWay) {
 						long val = Long.parseLong(((Attribute)start.getAttributes().next()).getValue());
 						if(lastWayNode == 0) {
+							firstWayNode = val;
 							lastWayNode = val;
 						}
 						else {
@@ -337,6 +363,21 @@ public class XMLParser {
 								if(attribute.getValue().equalsIgnoreCase("highway")) {
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).type = v;
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
+									if(v.equalsIgnoreCase("true")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("junction")) {
+									if(v.equalsIgnoreCase("roundabout")) {
+										edgeList.add(new IncompleteEdge(lastWayNode, firstWayNode, edgeList.get(0).type));
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
 									}
 								}
 							}
@@ -392,15 +433,15 @@ public class XMLParser {
 	 * @param edgeOutput Name of output file for edges
 	 * @param B Block size
 	 * @param filters for the type of highways
-	 * @param latMin Minimum latitude
-	 * @param latMax Maximum latitude
-	 * @param lonMin Minimum longitude
-	 * @param lonMax Maximum latitude
+	 * @param minLat Minimum latitude
+	 * @param maxLat Maximum latitude
+	 * @param minLon Minimum longitude
+	 * @param maxLon Maximum latitude
 	 * @throws XMLStreamException
 	 * @throws IOException 
 	 */
 	public void parseBoxAndFilterEdges(String input, String nodeOutput, String edgeOutput, int B, 
-			ArrayList<String> filters, long latMin,	long latMax, long lonMin, long lonMax) 
+			ArrayList<String> filters, double minLat,	double maxLat, double minLon, double maxLon) 
 			throws XMLStreamException, IOException {
 		
 		ObjectOutputStream outN = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodeOutput),B));
@@ -409,7 +450,7 @@ public class XMLParser {
 		XMLInputFactory xif = XMLInputFactory.newInstance();
 		XMLEventReader reader = xif.createXMLEventReader(is);
 		long id = 0;
-		float lon = 0, lat = 0;
+		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
 		String v = null;
@@ -427,10 +468,10 @@ public class XMLParser {
 							id = Long.parseLong(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lat")) {
-							lat = Float.parseFloat(attribute.getValue());
+							lat = Double.parseDouble(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lon")) {
-							lon = Float.parseFloat(attribute.getValue());
+							lon = Double.parseDouble(attribute.getValue());
 						}						
 					}
 				}
@@ -484,7 +525,7 @@ public class XMLParser {
 				String type = end.getName().getLocalPart();
 				if(type.equalsIgnoreCase("node")) {
 					//System.out.println("Node: id="+id+" lat="+lat+" lon="+lon);
-					if(latMin <= lat && lat <= latMax && lonMin <= lon && lon <= lonMax) {
+					if(minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon) {
 						outN.writeObject(new IncompleteNode(id,lat,lon));
 					}
 				}

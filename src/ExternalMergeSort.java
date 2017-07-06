@@ -27,6 +27,8 @@ public class ExternalMergeSort {
 	int B = 4096;
 	int k = (int) (M/B);
 	LinkedList<String> files;
+	public int sizeOfIncompleteNode = 24;
+	public int sizeOfIncompleteEdge = 50;
 	
 	/**
 	 * Set initial parameters.
@@ -51,12 +53,11 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	@SuppressWarnings("unchecked")
 	public void sortIncompleteNodes(String input, String output) {
 		
 		// Used to require N, but changed.
 		
-		long numberOfItems = M/24; // IncompleteNodes consist of 1 long, 2 floats, and its serializable ID (long)
+		long numberOfItems = M/sizeOfIncompleteNode;
 		ObjectInputStream oin = null;
 		ObjectOutputStream oout = null;
 		try {
@@ -66,14 +67,13 @@ public class ExternalMergeSort {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comparator comparator = new Comparator<IncompleteNode>() {
+		Comparator<IncompleteNode> comparator = new Comparator<IncompleteNode>() {
 			@Override
 			public int compare(IncompleteNode node1, IncompleteNode node2) {
 				return Long.compare(node1.id, node2.id);
 			}
 		};
 		
-		long count = 0;
 		int pass = 0;
 		files = new LinkedList<String>();
 		
@@ -81,7 +81,6 @@ public class ExternalMergeSort {
 		//while(count < N) {
 		boolean read = true;
 		while(read) {
-			count = count + numberOfItems;
 			pass++;
 			
 			//System.out.println("Pass "+pass+" to sort "+numberOfItems+" elements");
@@ -340,10 +339,9 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	@SuppressWarnings("unchecked")
 	public void sortIncompleteEdgesByNodeID1(String input, String output) {
 		
-		long numberOfItems = M/50; // IncompleteEdges consist a ton of longs, and a String
+		long numberOfItems = M/sizeOfIncompleteEdge;
 		ObjectInputStream oin = null;
 		ObjectOutputStream oout = null;
 		try {
@@ -353,21 +351,19 @@ public class ExternalMergeSort {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comparator comparator = new Comparator<IncompleteEdge>() {
+		Comparator<IncompleteEdge> comparator = new Comparator<IncompleteEdge>() {
 			@Override
 			public int compare(IncompleteEdge edge1, IncompleteEdge edge2) {
 				return Long.compare(edge1.nodeID1, edge2.nodeID1);
 			}
 		};
 		
-		long count = 0;
 		int pass = 0;
 		files = new LinkedList<String>();
 		
 		// Scan through the input file in chunks of numberOfItems we can hold in internal memory
 		boolean read = true;
 		while(read) {
-			count = count + numberOfItems;
 			pass++;
 			
 			try {
@@ -616,10 +612,9 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	@SuppressWarnings("unchecked")
 	public void sortIncompleteEdgesByNodeID2(String input, String output) {
 		
-		long numberOfItems = M/50; // IncompleteEdges consist a ton of longs, and a String
+		long numberOfItems = M/sizeOfIncompleteEdge;
 		ObjectInputStream oin = null;
 		ObjectOutputStream oout = null;
 		try {
@@ -629,21 +624,19 @@ public class ExternalMergeSort {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		Comparator comparator = new Comparator<IncompleteEdge>() {
+		Comparator<IncompleteEdge> comparator = new Comparator<IncompleteEdge>() {
 			@Override
 			public int compare(IncompleteEdge edge1, IncompleteEdge edge2) {
 				return Long.compare(edge1.nodeID2, edge2.nodeID2);
 			}
 		};
 		
-		long count = 0;
 		int pass = 0;
 		files = new LinkedList<String>();
 		
 		// Scan through the input file in chunks of numberOfItems we can hold in internal memory
 		boolean read = true;
 		while(read) {
-			count = count + numberOfItems;
 			pass++;
 			
 			try {

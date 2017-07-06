@@ -28,10 +28,10 @@ public class Test {
 		//simpleExternalMergeTest();
 		
 		// Distance between two lat/lon points
-		//distanceTest();
+		distanceTest();
 		
 		// CompleteTest
-		completePassTest();
+		//completePassTest();
 
 	}
 	

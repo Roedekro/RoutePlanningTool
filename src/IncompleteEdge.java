@@ -16,6 +16,7 @@ public class IncompleteEdge implements Serializable {
 					// between the two nodes when we add the incomplete edge to a node.
 	public double lon; // As above.
 	public int distance; // meters
+	int maxSpeed = 0;
 	
 	public IncompleteEdge(long id1, long id2) {
 		nodeID1 = id1;
@@ -33,6 +34,14 @@ public class IncompleteEdge implements Serializable {
 		nodeID2 = id2;
 		this.type = type;
 		this.distance = distance;
+	}
+	
+	public IncompleteEdge(long id1, long id2, String type, int distance, int maxSpeed) {
+		nodeID1 = id1;
+		nodeID2 = id2;
+		this.type = type;
+		this.distance = distance;
+		this.maxSpeed = maxSpeed;
 	}
 	
 	public IncompleteEdge(long id1, long id2, String type, boolean oneway) {

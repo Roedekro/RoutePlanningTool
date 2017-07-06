@@ -11,6 +11,7 @@ public class Edge implements Serializable{
 	public long nodeID;
 	public String type;
 	public int distance; // meters
+	int maxSpeed = 0;
 	
 	/**
 	 * 
