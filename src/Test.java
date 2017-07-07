@@ -1,11 +1,13 @@
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -21,6 +23,10 @@ import javax.xml.stream.XMLStreamException;
 public class Test {
 
 	public void run() {
+		
+		// Rundkørsel test
+		testRundkoersel();		
+		
 		// XML parsing
 		//simpleXMLTest();
 		
@@ -28,11 +34,66 @@ public class Test {
 		//simpleExternalMergeTest();
 		
 		// Distance between two lat/lon points
-		distanceTest();
+		//distanceTest();
 		
 		// CompleteTest
 		//completePassTest();
 
+	}
+	
+	public void testRundkoersel() {
+		
+		long M = 2147483648L; // 2 GigaByte
+		int B = 8192; // 2 page sizes
+		int k = (int) (M/B); // 262144
+		ArrayList<String> filters = new ArrayList<String>();
+		filters.add("motorway");
+		filters.add("trunk");
+		filters.add("primary");
+		filters.add("secondary");
+		filters.add("tertiary");
+		filters.add("unclassified");
+		filters.add("residential");
+		filters.add("service");
+		filters.add("motorway_link");
+		filters.add("trunk_link");
+		filters.add("primary_link");
+		filters.add("secondary_link");
+		filters.add("tertiary_link");
+		filters.add("living_street");
+		filters.add("road");
+		double minLat = 54.55;
+		double maxLat = 57.76;
+		double minLon = 8;
+		double maxLon = 12.7;
+		String input = "rundkoersel.osm";
+		String output = "rundNoder";
+		XMLParser parser = new XMLParser();
+		ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
+		GraphProcessor gp = new GraphProcessor(M, B);
+		try {
+			parser.parseBoxAndFilterEdges(input, "node1", "edge1", B, filters, 
+					minLat, maxLat, minLon, maxLon);
+			ems.sortIncompleteNodes("node1", "node2");
+			Files.delete(new File("node1").toPath());
+			ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
+			Files.delete(new File("edge1").toPath());
+			gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "edge3");
+			Files.delete(new File("edge2").toPath());
+			ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
+			Files.delete(new File("edge3").toPath());
+			gp.secondPassCombineIncompleteNodeEdge("node2", "edge4", "edge5");
+			Files.delete(new File("edge4").toPath());
+			ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
+			Files.delete(new File("edge5").toPath());
+			gp.thirdPassCombineIncompleteNodeEdge("node2", "edge6", output);
+			Files.delete(new File("node2").toPath());
+			Files.delete(new File("edge6").toPath());
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void simpleXMLTest() {

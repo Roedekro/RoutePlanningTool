@@ -193,7 +193,7 @@ public class GraphProcessor {
 	 * @param lon1
 	 * @param lat2
 	 * @param lon2
-	 * @return distance in meters
+	 * @return distance in cm
 	 */
 	public int calculateDistance(double lat1, double lon1, double lat2, double lon2) {
 		
@@ -214,7 +214,7 @@ public class GraphProcessor {
 		// Different way of writing the above
 		//double distance = 12742 * Math.atan2(expression4, Math.sqrt(1-expression1-expression3));
 		
-		return (int) Math.round(distance*1000);
+		return (int) Math.round(distance*100000); // Cm because Math.round is long
 		
 	}
 	
@@ -255,8 +255,11 @@ public class GraphProcessor {
 		while(true) {
 			
 			if(inEdge.nodeID1 == node.id) {
-				edge = new Edge(inEdge.nodeID2,inEdge.type,inEdge.distance);
-				node.addEdge(edge);
+				if(inEdge.nodeID2 != node.id) {
+					// No pointing to yourself
+					edge = new Edge(inEdge.nodeID2,inEdge.type,inEdge.distance,inEdge.maxSpeed);
+					node.addEdge(edge);
+				}
 				try {
 					inEdge = (IncompleteEdge) inEdges.readObject();
 				} catch (IOException | ClassNotFoundException e) {

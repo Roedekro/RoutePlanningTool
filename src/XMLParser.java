@@ -105,9 +105,20 @@ public class XMLParser {
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).type = v;
 									}
+									// Just to be sure
+									if(v.equalsIgnoreCase("motorway")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+									else if(v.equalsIgnoreCase("motorway_link")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
-									if(v.equalsIgnoreCase("true")) {
+									if(v.equalsIgnoreCase("yes")) {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
@@ -119,6 +130,12 @@ public class XMLParser {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
+									int maxspeed = Integer.parseInt(v);
+									for(int i = 0; i < edgeList.size(); i++) {
+										edgeList.get(i).maxSpeed = maxspeed;
 									}
 								}
 							}
@@ -235,9 +252,20 @@ public class XMLParser {
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).type = v;
 									}
+									// Just to be sure
+									if(v.equalsIgnoreCase("motorway")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+									else if(v.equalsIgnoreCase("motorway_link")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
-									if(v.equalsIgnoreCase("true")) {
+									if(v.equalsIgnoreCase("yes")) {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
@@ -249,6 +277,12 @@ public class XMLParser {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
+									int maxspeed = Integer.parseInt(v);
+									for(int i = 0; i < edgeList.size(); i++) {
+										edgeList.get(i).maxSpeed = maxspeed;
 									}
 								}
 							}
@@ -364,9 +398,20 @@ public class XMLParser {
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).type = v;
 									}
+									// Just to be sure
+									if(v.equalsIgnoreCase("motorway")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+									else if(v.equalsIgnoreCase("motorway_link")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
-									if(v.equalsIgnoreCase("true")) {
+									if(v.equalsIgnoreCase("yes")) {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
@@ -378,6 +423,12 @@ public class XMLParser {
 										for(int i = 0; i < edgeList.size(); i++) {
 											edgeList.get(i).oneway = true;
 										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
+									int maxspeed = Integer.parseInt(v);
+									for(int i = 0; i < edgeList.size(); i++) {
+										edgeList.get(i).maxSpeed = maxspeed;
 									}
 								}
 							}
@@ -453,6 +504,7 @@ public class XMLParser {
 		double lon = 0, lat = 0;
 		boolean insideWay = false;
 		long lastWayNode = 0;
+		long firstWayNode = 0;
 		String v = null;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
 		while(reader.hasNext()) {
@@ -506,10 +558,37 @@ public class XMLParser {
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).type = v;
 									}
+									// Just to be sure
+									if(v.equalsIgnoreCase("motorway")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+									else if(v.equalsIgnoreCase("motorway_link")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("oneway")) {
+									if(v.equalsIgnoreCase("yes")) {
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("junction")) {
+									if(v.equalsIgnoreCase("roundabout")) {
+										edgeList.add(new IncompleteEdge(lastWayNode, firstWayNode, edgeList.get(0).type));
+										for(int i = 0; i < edgeList.size(); i++) {
+											edgeList.get(i).oneway = true;
+										}
+									}
+								}
+								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
+									int maxspeed = Integer.parseInt(v);
 									for(int i = 0; i < edgeList.size(); i++) {
-										edgeList.get(i).oneway = true;
+										edgeList.get(i).maxSpeed = maxspeed;
 									}
 								}
 							}

@@ -1,5 +1,12 @@
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.Console;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import javax.xml.stream.XMLStreamException;
@@ -22,7 +29,7 @@ public class Main {
 		String in = null;
 		long M = 2147483648L; // 2 GigaByte
 		int B = 8192; // 2 page sizes
-		int k = (int) (M/B); // 262144 M/B
+		int k = (int) (M/B); // 262144
 		boolean kSet = false;
 		double minLat = Double.MAX_VALUE;
 		double maxLat = Double.MAX_VALUE;
@@ -48,6 +55,8 @@ public class Main {
 						+ "specified type of roads. See http://wiki.openstreetmap.org/wiki/Key:highway for filters.");
 				System.out.println("=== Parse <input> <output> === Given a .osm file parses it into a file of Nodes."
 						+ " If Box/Filter has been set they will be applied to the Nodes.");
+				System.out.println("=== Print console <input> === Prints a Node file to console. Think twice before using this function!");
+				System.out.println("=== Print <input> === Prints a Node file to <input>.txt. This is to manually review small Node files.");
 				System.out.println("=== Exit");
 				/*System.out.println("======");
 				System.out.println("Tool written by Martin Jacobsen");
@@ -76,12 +85,12 @@ public class Main {
 					filters.add("tertiary_link");
 					filters.add("living_street");
 					filters.add("road");
-					minLat = 54;
-					maxLat = 58;
+					minLat = 54.55;
+					maxLat = 57.76;
 					minLon = 8;
-					maxLon = 13;
-					String input = split[2];
-					String output = split[3];
+					maxLon = 12.7;
+					String input = split[1];
+					String output = split[2];
 					XMLParser parser = new XMLParser();
 					ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
 					GraphProcessor gp = new GraphProcessor(M, B);
@@ -89,12 +98,20 @@ public class Main {
 						parser.parseBoxAndFilterEdges(input, "node1", "edge1", B, filters, 
 								minLat, maxLat, minLon, maxLon);
 						ems.sortIncompleteNodes("node1", "node2");
+						Files.delete(new File("node1").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
+						Files.delete(new File("edge1").toPath());
 						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "edge3");
+						Files.delete(new File("edge2").toPath());
 						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
+						Files.delete(new File("edge3").toPath());
 						gp.secondPassCombineIncompleteNodeEdge("node2", "edge4", "edge5");
+						Files.delete(new File("edge4").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
+						Files.delete(new File("edge5").toPath());
 						gp.thirdPassCombineIncompleteNodeEdge("node2", "edge6", output);
+						Files.delete(new File("node2").toPath());
+						Files.delete(new File("edge6").toPath());
 					} catch (XMLStreamException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -189,8 +206,8 @@ public class Main {
 			}
 			else if(split[0].equalsIgnoreCase("Parse")) {
 				if(split.length == 3) {
-					String input = split[2];
-					String output = split[3];
+					String input = split[1];
+					String output = split[2];
 					XMLParser parser = new XMLParser();
 					ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
 					GraphProcessor gp = new GraphProcessor(M, B);
@@ -209,16 +226,83 @@ public class Main {
 							parser.parse(input, "node1", "edge1", B);
 						}
 						ems.sortIncompleteNodes("node1", "node2");
+						Files.delete(new File("node1").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
+						Files.delete(new File("edge1").toPath());
 						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "edge3");
+						Files.delete(new File("edge2").toPath());
 						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
+						Files.delete(new File("edge3").toPath());
 						gp.secondPassCombineIncompleteNodeEdge("node2", "edge4", "edge5");
+						Files.delete(new File("edge4").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
+						Files.delete(new File("edge5").toPath());
 						gp.thirdPassCombineIncompleteNodeEdge("node2", "edge6", output);
+						Files.delete(new File("node2").toPath());
+						Files.delete(new File("edge6").toPath());
 					} catch (XMLStreamException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
 						e.printStackTrace();
+					}
+				}
+				else {
+					System.out.println("Incorrect number of arguments");
+				}
+			}
+			else if(split[0].equalsIgnoreCase("Print")) {
+				if(split.length == 3) {
+					ObjectInputStream oin = null;
+					try {
+						oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(split[2]),B));
+						Node node = null;
+						while(true) {
+							node = (Node) oin.readObject();
+							System.out.println("Node id="+node.id+" lat="+node.lat+" lon="+node.lon);
+							for(int i = 0; i < node.edges.size(); i++) {
+								Edge edge = node.edges.get(i);
+								System.out.println("\t Edge id="+edge.nodeID+" type="+edge.type+
+										" distance="+edge.distance+" maxSpeed="+edge.maxSpeed);
+							}
+						}
+					} catch (IOException | ClassNotFoundException e) {
+						// Done
+						try {
+							oin.close();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+				}
+				else if(split.length == 2) {
+					ObjectInputStream oin = null;
+					BufferedWriter out = null;
+					try {
+						oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(split[1]),B));
+						out = new BufferedWriter(new FileWriter(split[1]+".txt"));
+						Node node = null;
+						while(true) {
+							node = (Node) oin.readObject();
+							out.write("Node id="+node.id+" lat="+node.lat+" lon="+node.lon);
+							out.newLine();
+							for(int i = 0; i < node.edges.size(); i++) {
+								Edge edge = node.edges.get(i);
+								out.write("\t Edge id="+edge.nodeID+" type="+edge.type+
+										" distance="+edge.distance+" maxSpeed="+edge.maxSpeed);
+								out.newLine();
+							}
+						}
+					} catch (IOException | ClassNotFoundException e) {
+						// Done
+						try {
+							oin.close();
+							out.flush();
+							out.close();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 				}
 				else {

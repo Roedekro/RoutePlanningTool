@@ -10,12 +10,12 @@ public class IncompleteEdge implements Serializable {
 	private static final long serialVersionUID = 8532488463189916384L;
 	public long nodeID1;
 	public long nodeID2;
-	public String type;
+	public String type = "";
 	public boolean oneway = false;
 	public double lat; // lat coordinate of the first node we look up. This way we can compute the distance
 					// between the two nodes when we add the incomplete edge to a node.
 	public double lon; // As above.
-	public int distance; // meters
+	public int distance; // cm
 	int maxSpeed = 0;
 	
 	public IncompleteEdge(long id1, long id2) {
