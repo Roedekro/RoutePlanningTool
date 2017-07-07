@@ -9,10 +9,10 @@ import java.util.ArrayList;
 public class Node implements Serializable {
 
 	private static final long serialVersionUID = -3416046260638920518L;
-	public long id;
-	public double lat;
-	public double lon;
-	public ArrayList<Edge> edges;
+	public long id; // Node id from openstreetmap
+	public double lat; // Latitude
+	public double lon; // Longitude
+	public ArrayList<Edge> edges; // Array of edges that points to other nodes
 	
 	public Node(long id, double lat2, double lon2) {
 		this.id = id;

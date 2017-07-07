@@ -25,21 +25,24 @@ public class GraphProcessor {
 	 * First pass that compares nodeID1 of edges with the nodes,
 	 * removing any edge that doesnt have a corresponding node.
 	 * Also populates the lat and lon of the edges.
-	 * @param nodes File containing sorted IncompleteNodes
-	 * @param edges File containing IncompleteEdges sorted by nodeID1
-	 * @param output File that will contain the filtered sorted list of IncompleteEdges
+	 * Marks if a node has an edge pointing to it.
+	 * @param nodesInput File containing sorted IncompleteNodes
+	 * @param edgesInput File containing IncompleteEdges sorted by nodeID1
+	 * @param nodesOutput File that will contain the filtered sorted list of IncompleteNodes
+	 * @param edgesOutput File that will contain the filtered sorted list of IncompleteEdges
 	 */
-	@SuppressWarnings("resource")
-	public void firstPassCombineIncompleteNodeEdge(String nodes, String edges, String output) {
+	public void firstPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
 		
 		ObjectInputStream inNodes = null;
 		ObjectInputStream inEdges = null;
-		ObjectOutputStream out = null;
+		ObjectOutputStream outNodes = null;
+		ObjectOutputStream outEdges = null;
 		
 		try {
-			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodes),B));
-			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edges),B));
-			out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(output),B));
+			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodesInput),B));
+			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edgesInput),B));
+			outNodes = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodesOutput),B));
+			outEdges = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(edgesOutput),B));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -59,11 +62,20 @@ public class GraphProcessor {
 			if(edge.nodeID1 == node.id) {
 				edge.lat = node.lat;
 				edge.lon = node.lon;
+				node.pointedFromTo = true;
 				try {
-					out.writeObject(edge);
+					outEdges.writeObject(edge);
 					edge = (IncompleteEdge) inEdges.readObject();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
+					while(true) {
+						try {
+							outNodes.writeObject(node);
+							node = (IncompleteNode) inNodes.readObject();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
 					break;
 				}
 			}
@@ -72,11 +84,20 @@ public class GraphProcessor {
 					edge = (IncompleteEdge) inEdges.readObject();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
+					while(true) {
+						try {
+							outNodes.writeObject(node);
+							node = (IncompleteNode) inNodes.readObject();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
 					break;
 				}
 			}
 			else {
 				try {
+					outNodes.writeObject(node);
 					node = (IncompleteNode) inNodes.readObject();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break
@@ -87,8 +108,10 @@ public class GraphProcessor {
 		
 		// Clean up
 		try {
-			out.flush();
-			out.close();
+			outNodes.flush();
+			outNodes.close();
+			outEdges.flush();
+			outEdges.close();
 			inNodes.close();
 			inEdges.close();
 		} catch (IOException e) {
@@ -102,20 +125,24 @@ public class GraphProcessor {
 	 * removing any edge that doesnt have a corresponding node.
 	 * Copies each valid edge, with the copy having switched 
 	 * nodeID1 and nodeID2. There is no copy of oneway edges.
-	 * @param nodes File containing sorted IncompleteNodes
-	 * @param edges File containing IncompleteEdges sorted by nodeID2
-	 * @param output File that will contain the finished (NOT sorted) list of IncompleteEdges
+	 * Removes any node that doesnt have an edge pointing from/to it.
+	 * @param nodesInput File containing sorted IncompleteNodes
+	 * @param edgesInput File containing IncompleteEdges sorted by nodeID2
+	 * @param nodesOutput File containing sorted list of Nodes that has an edge pointing from/to it.
+	 * @param edgesOutput File that will contain the finished (NOT sorted by ID1) list of IncompleteEdges
 	 */
-	public void secondPassCombineIncompleteNodeEdge(String nodes, String edges, String output) {
+	public void secondPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
 		
 		ObjectInputStream inNodes = null;
 		ObjectInputStream inEdges = null;
-		ObjectOutputStream out = null;
+		ObjectOutputStream outNodes = null;
+		ObjectOutputStream outEdges = null;
 		
 		try {
-			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodes),B));
-			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edges),B));
-			out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(output),B));
+			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodesInput),B));
+			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edgesInput),B));
+			outNodes = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodesOutput),B));
+			outEdges = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(edgesOutput),B));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -134,6 +161,8 @@ public class GraphProcessor {
 			
 			if(edge.nodeID2 == node.id) {
 				
+				node.pointedFromTo = true;
+				
 				// Calculate the distance
 				int distance = calculateDistance(node.lat, node.lon, edge.lat, edge.lon);
 				edge.distance = distance;
@@ -141,17 +170,31 @@ public class GraphProcessor {
 				// If not oneway add a copy with switched nodeID1 and nodeID2
 				if(!edge.oneway) {
 					try {
-						out.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed));
+						outEdges.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
 				
 				try {
-					out.writeObject(edge);
+					outEdges.writeObject(edge);
 					edge = (IncompleteEdge) inEdges.readObject();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
+					while(true) {
+						if(node.pointedFromTo) {
+							try {
+								outNodes.writeObject(node);
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+						try {
+							node = (IncompleteNode) inNodes.readObject();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
 					break;
 				}
 			}
@@ -160,11 +203,28 @@ public class GraphProcessor {
 					edge = (IncompleteEdge) inEdges.readObject();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
+					while(true) {
+						if(node.pointedFromTo) {
+							try {
+								outNodes.writeObject(node);
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+						}
+						try {
+							node = (IncompleteNode) inNodes.readObject();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
 					break;
 				}
 			}
 			else {
 				try {
+					if(node.pointedFromTo) {
+						outNodes.writeObject(node);
+					}
 					node = (IncompleteNode) inNodes.readObject();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break
@@ -175,8 +235,10 @@ public class GraphProcessor {
 		
 		// Clean up
 		try {
-			out.flush();
-			out.close();
+			outNodes.flush();
+			outNodes.close();
+			outEdges.flush();
+			outEdges.close();
 			inNodes.close();
 			inEdges.close();
 		} catch (IOException e) {
@@ -220,7 +282,7 @@ public class GraphProcessor {
 	
 	/**
 	 * Third pass that compares adds creates Nodes and adds IncompleteEdges
-	 * to these nodes. Removes nodes with no edges.
+	 * to these nodes.
 	 * @param nodes File containing sorted IncompleteNodes
 	 * @param edges File containing IncompleteEdges sorted by nodeID1
 	 * @param output File that will contain the finished sorted list of Nodes with Edges
@@ -264,14 +326,28 @@ public class GraphProcessor {
 					inEdge = (IncompleteEdge) inEdges.readObject();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
-					if(node.edges.size() > 0) {
+					/*if(node.edges.size() > 0) {
 						try {
 							out.writeObject(node);
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
-					}
+					}*/
+					while(true) {
+						try {
+							out.writeObject(node);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							inNode = (IncompleteNode) inNodes.readObject();
+							node = new Node(inNode.id,inNode.lat,inNode.lon);
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}		
 					break;
 				}
 			}
@@ -280,12 +356,26 @@ public class GraphProcessor {
 					inEdge = (IncompleteEdge) inEdges.readObject();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
-					if(node.edges.size() > 0) {
+					/*if(node.edges.size() > 0) {
 						try {
 							out.writeObject(node);
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
+						}
+					}*/
+					while(true) {
+						try {
+							out.writeObject(node);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							inNode = (IncompleteNode) inNodes.readObject();
+							node = new Node(inNode.id,inNode.lat,inNode.lon);
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
 						}
 					}
 					break;
@@ -293,9 +383,11 @@ public class GraphProcessor {
 			}
 			else {
 				try {
+					/* Moved functionality to second pass
 					if(node.edges.size() > 0) {
 						out.writeObject(node);
-					}
+					}*/
+					out.writeObject(node);
 					inNode = (IncompleteNode) inNodes.readObject();
 					node = new Node(inNode.id,inNode.lat,inNode.lon);
 				} catch (ClassNotFoundException | IOException e) {

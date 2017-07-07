@@ -8,16 +8,16 @@ import java.io.Serializable;
 public class Edge implements Serializable{
 
 	private static final long serialVersionUID = 5272733557733648123L;
-	public long nodeID;
-	public String type;
+	public long nodeID; // Node this edge points to
+	public String type; // Type of road see http://wiki.openstreetmap.org/wiki/Key:highway
 	public int distance; // Centimeter
-	int maxSpeed = 0;
+	public int maxSpeed = 0; // km/h
 	
 	/**
 	 * 
 	 * @param id of the node this edge points to
 	 * @param type of road
-	 * @param distance of the road
+	 * @param distance of the road in centimeter
 	 */
 	public Edge(long id, String type, int distance) {
 		nodeID = id;
@@ -25,6 +25,13 @@ public class Edge implements Serializable{
 		this.distance = distance;
 	}
 	
+	/**
+	 * 
+	 * @param id of the node this edge points to
+	 * @param type of road
+	 * @param distance of the road in centimeter
+	 * @param maxSpeed in km/h
+	 */
 	public Edge(long id, String type, int distance, int maxSpeed) {
 		nodeID = id;
 		this.type = type;

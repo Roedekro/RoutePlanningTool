@@ -11,6 +11,7 @@ public class IncompleteNode implements Serializable{
 	public long id;
 	public double lat;
 	public double lon;
+	public boolean pointedFromTo = false;
 	
 	public IncompleteNode(long id, double lat2, double lon2) {
 		this.id = id;

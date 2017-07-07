@@ -101,16 +101,18 @@ public class Main {
 						Files.delete(new File("node1").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
 						Files.delete(new File("edge1").toPath());
-						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "edge3");
+						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "node3","edge3");
+						Files.delete(new File("node2").toPath());
 						Files.delete(new File("edge2").toPath());
 						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
 						Files.delete(new File("edge3").toPath());
-						gp.secondPassCombineIncompleteNodeEdge("node2", "edge4", "edge5");
+						gp.secondPassCombineIncompleteNodeEdge("node3", "edge4", "node4", "edge5");
+						Files.delete(new File("node3").toPath());
 						Files.delete(new File("edge4").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
 						Files.delete(new File("edge5").toPath());
-						gp.thirdPassCombineIncompleteNodeEdge("node2", "edge6", output);
-						Files.delete(new File("node2").toPath());
+						gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
+						Files.delete(new File("node4").toPath());
 						Files.delete(new File("edge6").toPath());
 					} catch (XMLStreamException e) {
 						e.printStackTrace();
@@ -229,16 +231,18 @@ public class Main {
 						Files.delete(new File("node1").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
 						Files.delete(new File("edge1").toPath());
-						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "edge3");
+						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "node3","edge3");
+						Files.delete(new File("node2").toPath());
 						Files.delete(new File("edge2").toPath());
 						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
 						Files.delete(new File("edge3").toPath());
-						gp.secondPassCombineIncompleteNodeEdge("node2", "edge4", "edge5");
+						gp.secondPassCombineIncompleteNodeEdge("node3", "edge4", "node4", "edge5");
+						Files.delete(new File("node3").toPath());
 						Files.delete(new File("edge4").toPath());
 						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
 						Files.delete(new File("edge5").toPath());
-						gp.thirdPassCombineIncompleteNodeEdge("node2", "edge6", output);
-						Files.delete(new File("node2").toPath());
+						gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
+						Files.delete(new File("node4").toPath());
 						Files.delete(new File("edge6").toPath());
 					} catch (XMLStreamException e) {
 						e.printStackTrace();
