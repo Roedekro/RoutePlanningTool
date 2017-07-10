@@ -8,8 +8,8 @@ import java.io.Serializable;
 public class IncompleteEdge implements Serializable {
 
 	private static final long serialVersionUID = 8532488463189916384L;
-	public long nodeID1;
-	public long nodeID2;
+	public long nodeID1 = 0;
+	public long nodeID2 = 0;
 	public String type = ""; // Cant be =null for comparisons.
 	public boolean oneway = false;
 	public double lat; // lat coordinate of the first node we look up. This way we can compute the distance

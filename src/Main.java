@@ -23,8 +23,8 @@ public class Main {
 		//test();
 		
 		System.out.println("=== Route Planning Tool");
-		System.out.println("A tool for parsing and processing .osm data from Open Street Map - www.openstreetmap.org");
-		System.out.println("For a list of commands type help");
+		System.out.println("A tool for parsing and processing .osm data from Open Street Map - www.openstreetmap.org. "
+				+ "For a list of commands type help.");
 		Console console = System.console();
 		String in = null;
 		long M = 2147483648L; // 2 GigaByte

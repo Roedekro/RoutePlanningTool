@@ -354,7 +354,11 @@ public class ExternalMergeSort {
 		Comparator<IncompleteEdge> comparator = new Comparator<IncompleteEdge>() {
 			@Override
 			public int compare(IncompleteEdge edge1, IncompleteEdge edge2) {
-				return Long.compare(edge1.nodeID1, edge2.nodeID1);
+				int ret = Long.compare(edge1.nodeID1, edge2.nodeID1);
+				if(ret == 0) {
+					return Long.compare(edge1.nodeID2, edge2.nodeID2);
+				}
+				return ret;
 			}
 		};
 		
@@ -627,7 +631,11 @@ public class ExternalMergeSort {
 		Comparator<IncompleteEdge> comparator = new Comparator<IncompleteEdge>() {
 			@Override
 			public int compare(IncompleteEdge edge1, IncompleteEdge edge2) {
-				return Long.compare(edge1.nodeID2, edge2.nodeID2);
+				int ret = Long.compare(edge1.nodeID2, edge2.nodeID2);
+				if(ret == 0) {
+					return Long.compare(edge1.nodeID1, edge2.nodeID1);
+				}
+				return ret;
 			}
 		};
 		

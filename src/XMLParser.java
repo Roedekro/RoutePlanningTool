@@ -202,6 +202,10 @@ public class XMLParser {
 						}
 					}
 				}
+				else if(type.equalsIgnoreCase("relation")) {
+					// Done with nodes and ways, break
+					break;
+				}
 			}
 			else if(event.getEventType() == XMLStreamConstants.END_ELEMENT) {
 				EndElement end = event.asEndElement();
@@ -220,10 +224,12 @@ public class XMLParser {
 						for(int i = 0; i < filters.size(); i++) {
 							if(edgeType.equalsIgnoreCase(filters.get(i))) {
 								filter = true;
+								break;
 							}
 						}
 					}
 					else {
+						// No filter arguments were given
 						filter = true;
 					}
 					if(filter) {
