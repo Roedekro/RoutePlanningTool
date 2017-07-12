@@ -27,7 +27,13 @@ import org.xml.sax.Attributes;
  * @author Martin
  *
  */
+
 public class XMLParser {
+	
+	public long numberNodesIn = 0;
+	public long numberWaysIn = 0;
+	public long numberNodesOut = 0;
+	public long numberEdgesOut = 0;
 	
 	/**
 	 * Parses a .osm file
@@ -38,7 +44,6 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException 
 	 */
-	
 	public void parse(String input, String nodeOutput, String edgeOutput, int B) throws XMLStreamException, IOException {
 		
 		parseBoxAndFilterEdges(input, nodeOutput, edgeOutput, B, new ArrayList<String>(), 
@@ -99,6 +104,11 @@ public class XMLParser {
 			ArrayList<String> filters, double minLat,	double maxLat, double minLon, double maxLon) 
 			throws XMLStreamException, IOException {
 		
+		numberNodesIn = 0;
+		numberWaysIn = 0;
+		numberNodesOut = 0;
+		numberEdgesOut = 0;
+		
 		ObjectOutputStream outN = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodeOutput),B));
 		ObjectOutputStream outE = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(edgeOutput),B));
 		InputStream is = new FileInputStream(new File(input));
@@ -107,6 +117,7 @@ public class XMLParser {
 		long id = 0;
 		double lon = 0, lat = 0;
 		boolean insideWay = false;
+		boolean address = false;
 		long lastWayNode = 0;
 		long firstWayNode = 0;
 		String v = null;
@@ -117,6 +128,8 @@ public class XMLParser {
 				StartElement start = event.asStartElement();
 				String type = start.getName().getLocalPart();
 				if(type.equalsIgnoreCase("node")) {
+					numberNodesIn++;
+					address = false;
 					Iterator attributes = start.getAttributes();
 					while(attributes.hasNext()) {
 						Attribute attribute = (Attribute) attributes.next();
@@ -132,6 +145,7 @@ public class XMLParser {
 					}
 				}
 				else if(type.equalsIgnoreCase("way")) {
+					numberWaysIn++;
 					insideWay = true;
 					lastWayNode = 0;
 					edgeList = new ArrayList<IncompleteEdge>();
@@ -201,6 +215,18 @@ public class XMLParser {
 							}	
 						}
 					}
+					else {
+						// Inside Node, check address
+						Iterator attributes = start.getAttributes();
+						while(attributes.hasNext()) {
+							Attribute attribute = (Attribute) attributes.next();
+							if(attribute.getName().getLocalPart().equalsIgnoreCase("k")) {
+								if(attribute.getValue().equalsIgnoreCase("addr:housenumber")) {
+									address = true;
+								}
+							}
+						}
+					}
 				}
 				else if(type.equalsIgnoreCase("relation")) {
 					// Done with nodes and ways, break
@@ -212,7 +238,8 @@ public class XMLParser {
 				String type = end.getName().getLocalPart();
 				if(type.equalsIgnoreCase("node")) {
 					//System.out.println("Node: id="+id+" lat="+lat+" lon="+lon);
-					if(minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon) {
+					if(minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon && !address) {
+						numberNodesOut++;
 						outN.writeObject(new IncompleteNode(id,lat,lon));
 					}
 				}
@@ -233,6 +260,7 @@ public class XMLParser {
 						filter = true;
 					}
 					if(filter) {
+						numberEdgesOut += edgeList.size();
 						for(int i = 0; i < edgeList.size(); i++) {
 							//IncompleteEdge edge = edgeList.get(i);
 							//System.out.println("Edge from "+edge.nodeID1+ " to "+edge.nodeID2+" of type "+edge.type);

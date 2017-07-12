@@ -17,6 +17,17 @@ import javax.xml.stream.XMLStreamException;
  *
  */
 public class Main {
+	
+	public static long M = 2147483648L; // 2 GigaByte
+	public static int B = 8192; // 2 page sizes
+	public static int k = (int) (M/B); // 262144
+	public static boolean kSet = false;
+	public static double minLat = Double.MAX_VALUE;
+	public static double maxLat = Double.MAX_VALUE;
+	public static double minLon = Double.MAX_VALUE;
+	public static double maxLon = Double.MAX_VALUE;
+	public static ArrayList<String> filters = new ArrayList<String>();
+	public static boolean filterSet = false;
 
 	public static void main(String[] args) {
 		
@@ -27,16 +38,7 @@ public class Main {
 				+ "For a list of commands type help.");
 		Console console = System.console();
 		String in = null;
-		long M = 2147483648L; // 2 GigaByte
-		int B = 8192; // 2 page sizes
-		int k = (int) (M/B); // 262144
-		boolean kSet = false;
-		double minLat = Double.MAX_VALUE;
-		double maxLat = Double.MAX_VALUE;
-		double minLon = Double.MAX_VALUE;
-		double maxLon = Double.MAX_VALUE;
-		ArrayList<String> filters = new ArrayList<String>();
-		boolean filterSet = false;
+		
 		
 		while(true) {
 			in = console.readLine();
@@ -91,34 +93,7 @@ public class Main {
 					maxLon = 12.7;
 					String input = split[1];
 					String output = split[2];
-					XMLParser parser = new XMLParser();
-					ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
-					GraphProcessor gp = new GraphProcessor(M, B);
-					try {
-						parser.parseBoxAndFilterEdges(input, "node1", "edge1", B, filters, 
-								minLat, maxLat, minLon, maxLon);
-						ems.sortIncompleteNodes("node1", "node2");
-						Files.delete(new File("node1").toPath());
-						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
-						Files.delete(new File("edge1").toPath());
-						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "node3","edge3");
-						Files.delete(new File("node2").toPath());
-						Files.delete(new File("edge2").toPath());
-						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
-						Files.delete(new File("edge3").toPath());
-						gp.secondPassCombineIncompleteNodeEdge("node3", "edge4", "node4", "edge5");
-						Files.delete(new File("node3").toPath());
-						Files.delete(new File("edge4").toPath());
-						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
-						Files.delete(new File("edge5").toPath());
-						gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
-						Files.delete(new File("node4").toPath());
-						Files.delete(new File("edge6").toPath());
-					} catch (XMLStreamException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					parseAndProcess(input,output);
 				}
 				else {
 					System.out.println("Incorrect number of arguments");
@@ -210,45 +185,7 @@ public class Main {
 				if(split.length == 3) {
 					String input = split[1];
 					String output = split[2];
-					XMLParser parser = new XMLParser();
-					ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
-					GraphProcessor gp = new GraphProcessor(M, B);
-					try {
-						if(filterSet && minLat != Double.MAX_VALUE) {
-							parser.parseBoxAndFilterEdges(input, "node1", "edge1", B, filters, 
-									minLat, maxLat, minLon, maxLon);
-						}
-						else if(filterSet) {
-							parser.parseAndFilterEdges(input, "node1", "edge1", B, filters);
-						}
-						else if(minLat != Double.MAX_VALUE) {
-							parser.parseAndBox(input, "node1", "edge1", B, minLat, maxLat, minLon, maxLon);
-						}
-						else {
-							parser.parse(input, "node1", "edge1", B);
-						}
-						ems.sortIncompleteNodes("node1", "node2");
-						Files.delete(new File("node1").toPath());
-						ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
-						Files.delete(new File("edge1").toPath());
-						gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "node3","edge3");
-						Files.delete(new File("node2").toPath());
-						Files.delete(new File("edge2").toPath());
-						ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
-						Files.delete(new File("edge3").toPath());
-						gp.secondPassCombineIncompleteNodeEdge("node3", "edge4", "node4", "edge5");
-						Files.delete(new File("node3").toPath());
-						Files.delete(new File("edge4").toPath());
-						ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
-						Files.delete(new File("edge5").toPath());
-						gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
-						Files.delete(new File("node4").toPath());
-						Files.delete(new File("edge6").toPath());
-					} catch (XMLStreamException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					parseAndProcess(input, output);
 				}
 				else {
 					System.out.println("Incorrect number of arguments");
@@ -313,6 +250,52 @@ public class Main {
 					System.out.println("Incorrect number of arguments");
 				}
 			}
+		}
+	}
+	
+	public static void parseAndProcess(String input, String output) {
+		XMLParser parser = new XMLParser();
+		ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
+		GraphProcessor gp = new GraphProcessor(M, B);
+		long timeStart, timeMid, timeParse, timeProcess, timeTotal;
+		try {
+			timeStart = System.currentTimeMillis();
+			parser.parseBoxAndFilterEdges(input, "node1", "edge1", B, filters, 
+					minLat, maxLat, minLon, maxLon);
+			timeParse= System.currentTimeMillis() - timeStart;
+			System.out.println("Parsing finished in time "+timeParse);
+			System.out.println("Input #Nodes = "+parser.numberNodesIn);
+			System.out.println("Input #Ways = "+parser.numberWaysIn);
+			System.out.println("Output #Nodes = "+parser.numberNodesOut);
+			System.out.println("Output #Edges = "+parser.numberEdgesOut);
+			timeMid = System.currentTimeMillis();
+			ems.sortIncompleteNodes("node1", "node2");
+			Files.delete(new File("node1").toPath());
+			ems.sortIncompleteEdgesByNodeID1("edge1", "edge2");
+			Files.delete(new File("edge1").toPath());
+			gp.firstPassCombineIncompleteNodeEdge("node2", "edge2", "node3","edge3");
+			Files.delete(new File("node2").toPath());
+			Files.delete(new File("edge2").toPath());
+			ems.sortIncompleteEdgesByNodeID2("edge3", "edge4");
+			Files.delete(new File("edge3").toPath());
+			gp.secondPassCombineIncompleteNodeEdge("node3", "edge4", "node4", "edge5");
+			Files.delete(new File("node3").toPath());
+			Files.delete(new File("edge4").toPath());
+			ems.sortIncompleteEdgesByNodeID1("edge5", "edge6");
+			Files.delete(new File("edge5").toPath());
+			gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
+			Files.delete(new File("node4").toPath());
+			Files.delete(new File("edge6").toPath());
+			timeProcess = System.currentTimeMillis() - timeMid;
+			System.out.println("Processing finihed in time "+timeProcess);
+			System.out.println("Output #Nodes = "+gp.numberNodesOut);
+			System.out.println("Output #Edges = "+gp.numberEdgesOut);
+			timeTotal = timeParse + timeProcess;
+			System.out.println("Total time was "+timeTotal);
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	

@@ -15,6 +15,8 @@ public class GraphProcessor {
 	
 	long M = 2000000000;
 	int B = 4096;
+	public long numberNodesOut = 0;
+	public long numberEdgesOut = 0;
 	
 	public GraphProcessor(long M, int B) {
 		if(M > 0) this.M = M;
@@ -128,7 +130,7 @@ public class GraphProcessor {
 	 * Removes any node that doesnt have an edge pointing from/to it.
 	 * @param nodesInput File containing sorted IncompleteNodes
 	 * @param edgesInput File containing IncompleteEdges sorted by nodeID2
-	 * @param nodesOutput File containing sorted list of Nodes that has an edge pointing from/to it.
+	 * @param nodesOutput File containing sorted list of IncompleteNodes that has an edge pointing from/to it.
 	 * @param edgesOutput File that will contain the finished (NOT sorted by ID1) list of IncompleteEdges
 	 */
 	public void secondPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
@@ -289,6 +291,9 @@ public class GraphProcessor {
 	 */
 	public void thirdPassCombineIncompleteNodeEdge(String nodes, String edges, String output) {
 		
+		numberNodesOut = 0;
+		numberEdgesOut = 0;
+		
 		ObjectInputStream inNodes = null;
 		ObjectInputStream inEdges = null;
 		ObjectOutputStream out = null;
@@ -336,6 +341,8 @@ public class GraphProcessor {
 					}*/
 					while(true) {
 						try {
+							numberNodesOut++;
+							numberEdgesOut += node.edges.size();
 							out.writeObject(node);
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
@@ -366,6 +373,8 @@ public class GraphProcessor {
 					}*/
 					while(true) {
 						try {
+							numberNodesOut++;
+							numberEdgesOut += node.edges.size();
 							out.writeObject(node);
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
@@ -387,6 +396,8 @@ public class GraphProcessor {
 					if(node.edges.size() > 0) {
 						out.writeObject(node);
 					}*/
+					numberNodesOut++;
+					numberEdgesOut += node.edges.size();
 					out.writeObject(node);
 					inNode = (IncompleteNode) inNodes.readObject();
 					node = new Node(inNode.id,inNode.lat,inNode.lon);
