@@ -1,8 +1,9 @@
+package elements;
 import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Node in the graph, containing edges to other nodes.
+ * Node in the graph, containing an id, latitude, longitude, and edges to other nodes.
  * @author Martin
  *
  */

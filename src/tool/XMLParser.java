@@ -1,3 +1,4 @@
+package tool;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,12 +29,12 @@ import org.xml.sax.Attributes;
  *
  */
 
-public class XMLParser {
+class XMLParser {
 	
-	public long numberNodesIn = 0;
-	public long numberWaysIn = 0;
-	public long numberNodesOut = 0;
-	public long numberEdgesOut = 0;
+	protected long numberNodesIn = 0;
+	protected long numberWaysIn = 0;
+	protected long numberNodesOut = 0;
+	protected long numberEdgesOut = 0;
 	
 	/**
 	 * Parses a .osm file
@@ -44,7 +45,7 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException 
 	 */
-	public void parse(String input, String nodeOutput, String edgeOutput, int B) throws XMLStreamException, IOException {
+	protected void parse(String input, String nodeOutput, String edgeOutput, int B) throws XMLStreamException, IOException {
 		
 		parseBoxAndFilterEdges(input, nodeOutput, edgeOutput, B, new ArrayList<String>(), 
 				Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE);
@@ -63,7 +64,7 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException
 	 */
-	public void parseAndBox(String input, String nodeOutput, String edgeOutput, int B, double latMin,
+	protected void parseAndBox(String input, String nodeOutput, String edgeOutput, int B, double latMin,
 			double latMax, double lonMin, double lonMax) throws XMLStreamException, IOException {
 		
 		parseBoxAndFilterEdges(input, nodeOutput, edgeOutput, B, new ArrayList<String>(), latMin, latMax, lonMin, lonMax);	
@@ -79,7 +80,7 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException 
 	 */
-	public void parseAndFilterEdges(String input, String nodeOutput, String edgeOutput, int B, ArrayList<String> filters) 
+	protected void parseAndFilterEdges(String input, String nodeOutput, String edgeOutput, int B, ArrayList<String> filters) 
 			throws XMLStreamException, IOException {
 		
 		parseBoxAndFilterEdges(input, nodeOutput, edgeOutput, B, filters, Double.MIN_VALUE, Double.MAX_VALUE, Double.MIN_VALUE, Double.MAX_VALUE);
@@ -100,7 +101,7 @@ public class XMLParser {
 	 * @throws XMLStreamException
 	 * @throws IOException 
 	 */
-	public void parseBoxAndFilterEdges(String input, String nodeOutput, String edgeOutput, int B, 
+	protected void parseBoxAndFilterEdges(String input, String nodeOutput, String edgeOutput, int B, 
 			ArrayList<String> filters, double minLat,	double maxLat, double minLon, double maxLon) 
 			throws XMLStreamException, IOException {
 		
@@ -154,6 +155,7 @@ public class XMLParser {
 					if(insideWay) {
 						long val = Long.parseLong(((Attribute)start.getAttributes().next()).getValue());
 						if(lastWayNode == 0) {
+							firstWayNode = val;
 							lastWayNode = val;
 						}
 						else {

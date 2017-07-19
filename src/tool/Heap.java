@@ -1,3 +1,4 @@
+package tool;
 /**
  * MinHeap for use in external merge sort.
  * Based on Heapsort by J. W. J. Williams' "Algorithm 232" published in
@@ -6,7 +7,7 @@
  * @author Martin
  * 
  */
-public class Heap {
+class Heap {
 
 	/**
 	 * Works by expanding the array by one, then bubbling the input
@@ -16,7 +17,7 @@ public class Heap {
 	 * @param in HeapObject to be placed in array
 	 * @param n Number of elements already placed in the array
 	 */
-	public void inheap(HeapObject[] array, HeapObject in, int n) {
+	protected void inheap(HeapObject[] array, HeapObject in, int n) {
 		
 		n++;
 		int i = n;
@@ -48,7 +49,7 @@ public class Heap {
 	 * @param in HeapObject to be placed in array
 	 * @param n Number of elements already placed in the array
 	 */
-	public HeapObject SWOPHeap(HeapObject[] array, HeapObject in, int n) {
+	protected HeapObject SWOPHeap(HeapObject[] array, HeapObject in, int n) {
 		
 		HeapObject out = null;
 		if(n < 1) {
@@ -97,7 +98,7 @@ public class Heap {
 	 * @param n Number of elements in the array
 	 * @return
 	 */
-	public HeapObject outheap(HeapObject[] array, int n) {
+	protected HeapObject outheap(HeapObject[] array, int n) {
 		HeapObject in = array[n];
 		n--;
 		return SWOPHeap(array,in,n);
@@ -108,7 +109,7 @@ public class Heap {
 	 * @param array Array of HeapObjects NOT maintaining heap order
 	 * @param n Number of elements in the array
 	 */
-	public void setheap(HeapObject[] array, int n) {
+	protected void setheap(HeapObject[] array, int n) {
 		int j = 1;
 		while(j < n) {
 			inheap(array,array[j+1],j);

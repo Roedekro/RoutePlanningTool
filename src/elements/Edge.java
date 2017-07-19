@@ -1,3 +1,4 @@
+package elements;
 import java.io.Serializable;
 
 /**
@@ -11,7 +12,8 @@ public class Edge implements Serializable{
 	public long nodeID; // Node this edge points to
 	public String type; // Type of road see http://wiki.openstreetmap.org/wiki/Key:highway
 	public int distance; // Centimeter
-	public int maxSpeed = 0; // km/h
+	public int maxSpeed = 0; // km/h - 1km/h = 27.7777778cm/second
+	public int travelTime = 0; // Using milliseconds
 	
 	/**
 	 * 
@@ -37,5 +39,21 @@ public class Edge implements Serializable{
 		this.type = type;
 		this.distance = distance;
 		this.maxSpeed = maxSpeed;
+	}
+	
+	/**
+	 * 
+	 * @param id of the node this edge points to
+	 * @param type of road
+	 * @param distance of the road in centimeter
+	 * @param maxSpeed in km/h
+	 * @param travelTime in milliseconds
+	 */
+	public Edge(long id, String type, int distance, int maxSpeed, int travelTime) {
+		nodeID = id;
+		this.type = type;
+		this.distance = distance;
+		this.maxSpeed = maxSpeed;
+		this.travelTime = travelTime;
 	}
 }

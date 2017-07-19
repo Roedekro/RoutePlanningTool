@@ -1,3 +1,4 @@
+package tool;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.Console;
@@ -11,12 +12,15 @@ import java.util.ArrayList;
 
 import javax.xml.stream.XMLStreamException;
 
+import elements.Edge;
+import elements.Node;
+
 /**
  * Class responsible for UI and chaining the other classes together.
  * @author Martin
  *
  */
-public class Main {
+class Main {
 	
 	public static long M = 2147483648L; // 2 GigaByte
 	public static int B = 8192; // 2 page sizes
@@ -29,7 +33,7 @@ public class Main {
 	public static ArrayList<String> filters = new ArrayList<String>();
 	public static boolean filterSet = false;
 
-	public static void main(String[] args) {
+	protected static void main(String[] args) {
 		
 		//test();
 		
@@ -59,6 +63,8 @@ public class Main {
 						+ " If Box/Filter has been set they will be applied to the Nodes.");
 				System.out.println("=== Print console <input> === Prints a Node file to console. Think twice before using this function!");
 				System.out.println("=== Print <input> === Prints a Node file to <input>.txt. This is to manually review small Node files.");
+				System.out.println("=== Validate <Node file> <.osm file> === Validates the Node file up against the .osm file. Assumes the .osm "
+						+ "file is bounded correctly and will apply the car filters.");
 				System.out.println("=== Exit");
 				/*System.out.println("======");
 				System.out.println("Tool written by Martin Jacobsen");
@@ -98,30 +104,23 @@ public class Main {
 				else {
 					System.out.println("Incorrect number of arguments");
 				}
-				
-				
-				if(filterSet) {
-					filters = new ArrayList<String>();
-				}
-				filterSet = true;
-
 			}
 			else if(split[0].equalsIgnoreCase("Set")) {
 				if(split.length == 2) {
 					if(split[1].equalsIgnoreCase("M")) {
-						M = Long.parseLong(split[2]);
+						M = Long.parseLong(split[1]);
 						if(!kSet) {
 							k = (int) (M/B);
 						}
 					}
 					else if(split[1].equalsIgnoreCase("B")) {
-						B = Integer.parseInt(split[2]);
+						B = Integer.parseInt(split[1]);
 						if(!kSet) {
 							k = (int) (M/B);
 						}
 					}
 					else if(split[1].equalsIgnoreCase("k")) {
-						k = Integer.parseInt(split[2]);
+						k = Integer.parseInt(split[1]);
 						kSet = true;
 					}
 				}
@@ -192,7 +191,7 @@ public class Main {
 				}
 			}
 			else if(split[0].equalsIgnoreCase("Print")) {
-				if(split.length == 3) {
+				if(split[1].equalsIgnoreCase("console") && split.length == 3) {
 					ObjectInputStream oin = null;
 					try {
 						oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(split[2]),B));
@@ -250,10 +249,35 @@ public class Main {
 					System.out.println("Incorrect number of arguments");
 				}
 			}
+			else if(split[0].equalsIgnoreCase("Validate")) {
+				if(split.length == 3) {
+					String nodes = split[1];
+					String osm = split[2];
+					Validator validator = new Validator(B);
+					boolean b = false;
+					try {
+						b = validator.validate(nodes, osm);
+						
+					} catch (IOException | XMLStreamException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					finally {
+						System.out.println("Validator returned "+b);
+					}
+					//System.out.println("Validator returned "+b);
+				}
+				else {
+					System.out.println("Incorrect number of arguments");
+				}
+			}
+			else {
+				System.out.println("Unknown Command");
+			}
 		}
 	}
 	
-	public static void parseAndProcess(String input, String output) {
+	protected static void parseAndProcess(String input, String output) {
 		XMLParser parser = new XMLParser();
 		ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
 		GraphProcessor gp = new GraphProcessor(M, B);
@@ -299,7 +323,7 @@ public class Main {
 		}
 	}
 	
-	public static void test() {
+	protected static void test() {
 		
 		Test test = new Test();
 		test.run();	

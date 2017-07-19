@@ -1,3 +1,4 @@
+package tool;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -21,14 +22,14 @@ import java.util.LinkedList;
  * @author Martin
  * 
  */
-public class ExternalMergeSort {
+class ExternalMergeSort {
 
-	long M = 2000000000; // ~2gb
-	int B = 4096;
-	int k = (int) (M/B);
-	LinkedList<String> files;
-	public int sizeOfIncompleteNode = 24;
-	public int sizeOfIncompleteEdge = 50;
+	protected long M = 2000000000; // ~2gb
+	protected int B = 4096;
+	protected int k = (int) (M/B);
+	protected LinkedList<String> files;
+	protected int sizeOfIncompleteNode = 24;
+	protected int sizeOfIncompleteEdge = 50;
 	
 	/**
 	 * Set initial parameters.
@@ -36,7 +37,7 @@ public class ExternalMergeSort {
 	 * @param B Block Size.
 	 * @param k Number of merges in the k-way merge (M/B).
 	 */
-	public ExternalMergeSort(long M, int B, int k) {
+	protected ExternalMergeSort(long M, int B, int k) {
 		
 		if(M > 0) this.M = M;
 		if(B > 0) this.B = B;
@@ -53,7 +54,7 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	public void sortIncompleteNodes(String input, String output) {
+	protected void sortIncompleteNodes(String input, String output) {
 		
 		// Used to require N, but changed.
 		
@@ -339,7 +340,7 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	public void sortIncompleteEdgesByNodeID1(String input, String output) {
+	protected void sortIncompleteEdgesByNodeID1(String input, String output) {
 		
 		long numberOfItems = M/sizeOfIncompleteEdge;
 		ObjectInputStream oin = null;
@@ -616,7 +617,7 @@ public class ExternalMergeSort {
 	 * @param input File containing the elements to be sorted.
 	 * @param output Name of desired output file.
 	 */
-	public void sortIncompleteEdgesByNodeID2(String input, String output) {
+	protected void sortIncompleteEdgesByNodeID2(String input, String output) {
 		
 		long numberOfItems = M/sizeOfIncompleteEdge;
 		ObjectInputStream oin = null;

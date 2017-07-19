@@ -1,3 +1,4 @@
+package tool;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,15 +15,18 @@ import java.util.Random;
 
 import javax.xml.stream.XMLStreamException;
 
+import elements.Edge;
+import elements.Node;
+
 /**
  * Class responsible for testing the other classes.
  * Made to unclutter Main.
  * @author Martin
  *
  */
-public class Test {
+class Test {
 
-	public void run() {
+	protected void run() {
 		
 		// Rundkørsel test
 		testRundkoersel();		
@@ -41,7 +45,7 @@ public class Test {
 
 	}
 	
-	public void testRundkoersel() {
+	protected void testRundkoersel() {
 		
 		long M = 2147483648L; // 2 GigaByte
 		int B = 8192; // 2 page sizes
@@ -98,7 +102,7 @@ public class Test {
 		}
 	}
 	
-	public void simpleXMLTest() {
+	protected void simpleXMLTest() {
 		
 		XMLParser input = new XMLParser();
 		try {
@@ -109,7 +113,7 @@ public class Test {
 	}
 	
 	
-	public void simpleExternalMergeTest() {
+	protected void simpleExternalMergeTest() {
 		
 		int M = 96; // 4 elements
 		int B = 48; // 2 elements
@@ -178,7 +182,7 @@ public class Test {
 		}
 	}
 	
-	public void distanceTest() {
+	protected void distanceTest() {
 		
 		GraphProcessor gp = new GraphProcessor(0,0);
 		//38.898556		-77.037852
@@ -188,7 +192,7 @@ public class Test {
 		
 	}
 	
-	public void completePassTest() {
+	protected void completePassTest() {
 		
 		try {
 			ArrayList<String> al = new ArrayList<String>();

@@ -1,3 +1,4 @@
+package tool;
 import java.io.Serializable;
 
 /**
@@ -5,15 +6,15 @@ import java.io.Serializable;
  * @author Martin
  *
  */
-public class IncompleteNode implements Serializable{
+class IncompleteNode implements Serializable{
 
 	private static final long serialVersionUID = -4896887724692721954L;
-	public long id;
-	public double lat;
-	public double lon;
-	public boolean pointedFromTo = false;
+	protected long id;
+	protected double lat;
+	protected double lon;
+	protected boolean pointedFromTo = false;
 	
-	public IncompleteNode(long id, double lat2, double lon2) {
+	protected IncompleteNode(long id, double lat2, double lon2) {
 		this.id = id;
 		this.lat = lat2;
 		this.lon = lon2;

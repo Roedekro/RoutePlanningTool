@@ -1,3 +1,4 @@
+package tool;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
@@ -6,19 +7,22 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import elements.Edge;
+import elements.Node;
+
 /**
  * Class is responsible for managing the various stages of processing of our graph.
  * @author Martin
  *
  */
-public class GraphProcessor {
+class GraphProcessor {
 	
-	long M = 2000000000;
-	int B = 4096;
-	public long numberNodesOut = 0;
-	public long numberEdgesOut = 0;
+	protected long M = 2000000000;
+	protected int B = 4096;
+	protected long numberNodesOut = 0;
+	protected long numberEdgesOut = 0;
 	
-	public GraphProcessor(long M, int B) {
+	protected GraphProcessor(long M, int B) {
 		if(M > 0) this.M = M;
 		if(B > 0) this.B = B;
 	}
@@ -33,7 +37,7 @@ public class GraphProcessor {
 	 * @param nodesOutput File that will contain the filtered sorted list of IncompleteNodes
 	 * @param edgesOutput File that will contain the filtered sorted list of IncompleteEdges
 	 */
-	public void firstPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
+	protected void firstPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
 		
 		ObjectInputStream inNodes = null;
 		ObjectInputStream inEdges = null;
@@ -133,7 +137,7 @@ public class GraphProcessor {
 	 * @param nodesOutput File containing sorted list of IncompleteNodes that has an edge pointing from/to it.
 	 * @param edgesOutput File that will contain the finished (NOT sorted by ID1) list of IncompleteEdges
 	 */
-	public void secondPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
+	protected void secondPassCombineIncompleteNodeEdge(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
 		
 		ObjectInputStream inNodes = null;
 		ObjectInputStream inEdges = null;
@@ -168,11 +172,13 @@ public class GraphProcessor {
 				// Calculate the distance
 				int distance = calculateDistance(node.lat, node.lon, edge.lat, edge.lon);
 				edge.distance = distance;
+				int travelTime = calculateTravelTime(distance, edge.maxSpeed, edge.type);
+				edge.travelTime = travelTime;
 				
 				// If not oneway add a copy with switched nodeID1 and nodeID2
 				if(!edge.oneway) {
 					try {
-						outEdges.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed));
+						outEdges.writeObject(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed,edge.travelTime));
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -259,7 +265,7 @@ public class GraphProcessor {
 	 * @param lon2
 	 * @return distance in cm
 	 */
-	public int calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+	protected int calculateDistance(double lat1, double lon1, double lat2, double lon2) {
 		
 		double piDiv180 = Math.PI / 180;
 		double lat1r = lat1 * piDiv180;
@@ -289,7 +295,7 @@ public class GraphProcessor {
 	 * @param edges File containing IncompleteEdges sorted by nodeID1
 	 * @param output File that will contain the finished sorted list of Nodes with Edges
 	 */
-	public void thirdPassCombineIncompleteNodeEdge(String nodes, String edges, String output) {
+	protected void thirdPassCombineIncompleteNodeEdge(String nodes, String edges, String output) {
 		
 		numberNodesOut = 0;
 		numberEdgesOut = 0;
@@ -324,7 +330,7 @@ public class GraphProcessor {
 			if(inEdge.nodeID1 == node.id) {
 				if(inEdge.nodeID2 != node.id) {
 					// No pointing to yourself
-					edge = new Edge(inEdge.nodeID2,inEdge.type,inEdge.distance,inEdge.maxSpeed);
+					edge = new Edge(inEdge.nodeID2,inEdge.type,inEdge.distance,inEdge.maxSpeed,inEdge.travelTime);
 					node.addEdge(edge);
 				}
 				try {
@@ -418,6 +424,66 @@ public class GraphProcessor {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	/**
+	 * Calculates travel time over a distance in milliseconds
+	 * @param distance cm
+	 * @param maxSpeed km/h
+	 * @param type highway type, in case maxspeed=0
+	 * @return travel time in milliseconds
+	 */
+	protected int calculateTravelTime(int distance, int maxSpeed, String type) {
+		int max = maxSpeed;
+		if(maxSpeed == 0) {
+			if(type.equalsIgnoreCase("motorway")) {
+				max = 130;
+			}
+			else if(type.equalsIgnoreCase("trunk")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("primary")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("secondary")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("tertiary")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("unclassified")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("residential")) {
+				max = 50;
+			}
+			else if(type.equalsIgnoreCase("motorway_link")) {
+				max = 130;
+			}
+			else if(type.equalsIgnoreCase("trunk_link")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("primary_link")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("secondary_link")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("tertiary_link")) {
+				max = 80;
+			}
+			else if(type.equalsIgnoreCase("living_street")) {
+				max = 50;
+			}
+			else if(type.equalsIgnoreCase("road")) {
+				max = 80;
+			}
+			else {
+				return 0;
+			}
+		}
+		// Distance / speed in cm/second gives travel time in seconds, times one thousand for milliseconds
+		return (int) Math.round((distance / (max * 27.7777778)) * 1000);
 	}
 
 }
