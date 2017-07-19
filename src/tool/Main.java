@@ -20,7 +20,7 @@ import elements.Node;
  * @author Martin
  *
  */
-class Main {
+public class Main {
 	
 	public static long M = 2147483648L; // 2 GigaByte
 	public static int B = 8192; // 2 page sizes
@@ -33,7 +33,7 @@ class Main {
 	public static ArrayList<String> filters = new ArrayList<String>();
 	public static boolean filterSet = false;
 
-	protected static void main(String[] args) {
+	public static void main(String[] args) {
 		
 		//test();
 		

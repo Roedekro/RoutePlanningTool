@@ -2,7 +2,8 @@ package elements;
 import java.io.Serializable;
 
 /**
- * Edge in a node pointing to another node.
+ * Edge in a node pointing to another node. Contains ID of node it points to, 
+ * road type of the edge, distance, max speed and travel time.
  * @author Martin
  *
  */
