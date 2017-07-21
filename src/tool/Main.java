@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,9 +12,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 import javax.xml.stream.XMLStreamException;
-
-import elements.Edge;
-import elements.Node;
 
 /**
  * Class responsible for UI and chaining the other classes together.
@@ -35,6 +33,16 @@ public class Main {
 
 	public static void main(String[] args) {
 		
+		Tool tool = new Tool();
+		try {
+			tool.getNodesAsArrayList("rundNoder");
+		} catch (FileNotFoundException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
 		//test();
 		
 		System.out.println("=== Route Planning Tool");
@@ -229,7 +237,8 @@ public class Main {
 							for(int i = 0; i < node.edges.size(); i++) {
 								Edge edge = node.edges.get(i);
 								out.write("\t Edge id="+edge.nodeID+" type="+edge.type+
-										" distance="+edge.distance+" maxSpeed="+edge.maxSpeed);
+										" distance="+edge.distance+" maxSpeed="+edge.maxSpeed+
+										" travelTime="+edge.travelTime);
 								out.newLine();
 							}
 						}

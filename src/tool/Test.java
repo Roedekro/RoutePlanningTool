@@ -15,9 +15,6 @@ import java.util.Random;
 
 import javax.xml.stream.XMLStreamException;
 
-import elements.Edge;
-import elements.Node;
-
 /**
  * Class responsible for testing the other classes.
  * Made to unclutter Main.

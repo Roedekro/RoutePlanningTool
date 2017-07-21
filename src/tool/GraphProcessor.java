@@ -7,9 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import elements.Edge;
-import elements.Node;
-
 /**
  * Class is responsible for managing the various stages of processing of our graph.
  * @author Martin
@@ -455,6 +452,9 @@ class GraphProcessor {
 				max = 80;
 			}
 			else if(type.equalsIgnoreCase("residential")) {
+				max = 50;
+			}
+			else if(type.equalsIgnoreCase("service")) {
 				max = 50;
 			}
 			else if(type.equalsIgnoreCase("motorway_link")) {

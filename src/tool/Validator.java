@@ -19,9 +19,6 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import elements.Edge;
-import elements.Node;
-
 /**
  * Class responsible for validating Node files vs. the original .osm file.
  * @author Martin
