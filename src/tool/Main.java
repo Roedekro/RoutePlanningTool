@@ -33,16 +33,6 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		Tool tool = new Tool();
-		try {
-			tool.getNodesAsArrayList("rundNoder");
-		} catch (FileNotFoundException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
 		//test();
 		
 		System.out.println("=== Route Planning Tool");
@@ -334,8 +324,19 @@ public class Main {
 	
 	protected static void test() {
 		
+		Tool tool = new Tool();
+		try {
+			tool.getNodesAsArrayList("Roedekro");
+		} catch (FileNotFoundException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
 		Test test = new Test();
-		test.run();	
+		//test.run();	
 		
 	}
 }

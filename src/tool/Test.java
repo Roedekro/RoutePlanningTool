@@ -233,6 +233,7 @@ class Test {
 				Edge edge = node.edges.get(i);
 				System.out.println("Edge to id="+edge.nodeID+" of type="+edge.type+" and distance="+edge.distance);
 			}
+			oin.close();
 			
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
@@ -241,6 +242,5 @@ class Test {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		
 	}
 }
