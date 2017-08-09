@@ -24,9 +24,9 @@ public class Main {
 	public static int B = 8192; // 2 page sizes
 	public static int k = (int) (M/B); // 262144
 	public static boolean kSet = false;
-	public static double minLat = Double.MAX_VALUE;
+	public static double minLat = Double.MIN_VALUE;
 	public static double maxLat = Double.MAX_VALUE;
-	public static double minLon = Double.MAX_VALUE;
+	public static double minLon = Double.MIN_VALUE;
 	public static double maxLon = Double.MAX_VALUE;
 	public static ArrayList<String> filters = new ArrayList<String>();
 	public static boolean filterSet = false;

@@ -123,7 +123,10 @@ class XMLParser {
 		long firstWayNode = 0;
 		String v = null;
 		ArrayList<IncompleteEdge> edgeList = null; // List to store edges until we meet the highway tag
+		long counter = 0;
 		while(reader.hasNext()) {
+			//counter++;
+			//System.out.println(counter);
 			XMLEvent event = reader.nextEvent();
 			if(event.getEventType() == XMLStreamConstants.START_ELEMENT) {
 				StartElement start = event.asStartElement();
@@ -145,8 +148,9 @@ class XMLParser {
 						}						
 					}
 				}
-				else if(type.equalsIgnoreCase("way")) {
+				else if(type.equalsIgnoreCase("way")) {	
 					numberWaysIn++;
+					System.out.println(numberWaysIn + " " + numberNodesIn);
 					insideWay = true;
 					lastWayNode = 0;
 					edgeList = new ArrayList<IncompleteEdge>();
@@ -206,7 +210,22 @@ class XMLParser {
 									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
-									int maxspeed = Integer.parseInt(v);
+									int maxspeed = 0;
+									try {
+										maxspeed = Integer.parseInt(v);
+									}
+									catch(NumberFormatException e){
+										// If not an integer
+										if(v.contains("urban")) {
+											maxspeed = 50;
+										}
+										else if(v.contains("rural")) {
+											maxspeed = 80;
+										}
+										else if(v.contains("motorway")) {
+											maxspeed = 130;
+										}
+								    }		
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).maxSpeed = maxspeed;
 									}
@@ -242,7 +261,8 @@ class XMLParser {
 					//System.out.println("Node: id="+id+" lat="+lat+" lon="+lon);
 					if(minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon && !address) {
 						numberNodesOut++;
-						outN.writeObject(new IncompleteNode(id,lat,lon));
+						//System.out.println(numberNodesOut +" "+id);
+						outN.writeUnshared(new IncompleteNode(id,lat,lon));
 					}
 				}
 				else if(type.equalsIgnoreCase("way")) {
@@ -266,7 +286,7 @@ class XMLParser {
 						for(int i = 0; i < edgeList.size(); i++) {
 							//IncompleteEdge edge = edgeList.get(i);
 							//System.out.println("Edge from "+edge.nodeID1+ " to "+edge.nodeID2+" of type "+edge.type);
-							outE.writeObject(edgeList.get(i));
+							outE.writeUnshared(edgeList.get(i));
 						}
 					}
 				}

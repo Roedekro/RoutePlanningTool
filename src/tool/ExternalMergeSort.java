@@ -101,7 +101,7 @@ class ExternalMergeSort {
 			// Read to internal memory
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
-					temp.add((IncompleteNode) oin.readObject());
+					temp.add((IncompleteNode) oin.readUnshared());
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -122,7 +122,7 @@ class ExternalMergeSort {
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
 					//System.out.println("Writing: " +temp.get(i).id);
-					oout.writeObject(temp.get(i));
+					oout.writeUnshared(temp.get(i));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -170,7 +170,7 @@ class ExternalMergeSort {
 				IncompleteNode tempNode = null;
 				for(int i = 0; i < k; i++) {
 					try {
-						tempNode = (IncompleteNode) inputs.get(i).readObject();
+						tempNode = (IncompleteNode) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -201,13 +201,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempNode = (IncompleteNode) inputs.get(id).readObject();
+						tempNode = (IncompleteNode) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempNode.id,id,tempNode);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
@@ -251,7 +251,7 @@ class ExternalMergeSort {
 				IncompleteNode tempNode = null;
 				for(int i = 0; i < numberOfFiles; i++) {
 					try {
-						tempNode = (IncompleteNode) inputs.get(i).readObject();
+						tempNode = (IncompleteNode) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -285,13 +285,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempNode = (IncompleteNode) inputs.get(id).readObject();
+						tempNode = (IncompleteNode) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempNode.id,id,tempNode);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
@@ -383,7 +383,7 @@ class ExternalMergeSort {
 			// Read to internal memory
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
-					temp.add((IncompleteEdge) oin.readObject());
+					temp.add((IncompleteEdge) oin.readUnshared());
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -404,7 +404,7 @@ class ExternalMergeSort {
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
 					//System.out.println("Writing: " +temp.get(i).id);
-					oout.writeObject(temp.get(i));
+					oout.writeUnshared(temp.get(i));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -452,7 +452,7 @@ class ExternalMergeSort {
 				IncompleteEdge tempEdge = null;
 				for(int i = 0; i < k; i++) {
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(i).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -483,13 +483,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(id).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempEdge.nodeID1,id,tempEdge);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
@@ -533,7 +533,7 @@ class ExternalMergeSort {
 				IncompleteEdge tempEdge = null;
 				for(int i = 0; i < numberOfFiles; i++) {
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(i).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -562,13 +562,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(id).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempEdge.nodeID1,id,tempEdge);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
@@ -660,7 +660,7 @@ class ExternalMergeSort {
 			// Read to internal memory
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
-					temp.add((IncompleteEdge) oin.readObject());
+					temp.add((IncompleteEdge) oin.readUnshared());
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -681,7 +681,7 @@ class ExternalMergeSort {
 			for(int i = 0; i < numberOfItems; i++) {
 				try {
 					//System.out.println("Writing: " +temp.get(i).id);
-					oout.writeObject(temp.get(i));
+					oout.writeUnshared(temp.get(i));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -729,7 +729,7 @@ class ExternalMergeSort {
 				IncompleteEdge tempEdge = null;
 				for(int i = 0; i < k; i++) {
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(i).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -760,13 +760,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(id).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempEdge.nodeID2,id,tempEdge);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
@@ -810,7 +810,7 @@ class ExternalMergeSort {
 				IncompleteEdge tempEdge = null;
 				for(int i = 0; i < numberOfFiles; i++) {
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(i).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(i).readUnshared();
 					} catch (ClassNotFoundException e) {
 						e.printStackTrace();
 					} catch (IOException e) {
@@ -839,13 +839,13 @@ class ExternalMergeSort {
 				while(numberOfLiveStreams > 0) {
 					tempObject = heap.outheap(merge, numberOfLiveStreams);
 					try {
-						oout.writeObject(tempObject.object);
+						oout.writeUnshared(tempObject.object);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 					id = tempObject.id;
 					try {
-						tempEdge = (IncompleteEdge) inputs.get(id).readObject();
+						tempEdge = (IncompleteEdge) inputs.get(id).readUnshared();
 						// Below wont execute if EOF detected
 						tempObject = new HeapObject(tempEdge.nodeID2,id,tempEdge);
 						heap.inheap(merge, tempObject, numberOfLiveStreams-1);

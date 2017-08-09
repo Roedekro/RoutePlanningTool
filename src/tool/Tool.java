@@ -30,12 +30,12 @@ public class Tool {
 	 */
 	public ArrayList<Node> getNodesAsArrayList(String input) throws FileNotFoundException, IOException {
 		
-		ArrayList<Node> ret = new ArrayList<>();
+		ArrayList<Node> ret = new ArrayList<Node>();
 		ObjectInputStream oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input),B));
 		Node node = null;
 		while(true) {
 			try {
-				node = (Node) oin.readObject();
+				node = (Node) oin.readUnshared();
 				ret.add(node);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -64,7 +64,7 @@ public class Tool {
 		Node node = null;
 		while(true) {
 			try {
-				node = (Node) oin.readObject();
+				node = (Node) oin.readUnshared();
 				ret.add(node);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -122,7 +122,7 @@ public class Tool {
 		Node ret = null;
 		if(open) {
 			try {
-				ret = (Node) in.readObject();
+				ret = (Node) in.readUnshared();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
