@@ -150,7 +150,7 @@ class XMLParser {
 				}
 				else if(type.equalsIgnoreCase("way")) {	
 					numberWaysIn++;
-					System.out.println(numberWaysIn + " " + numberNodesIn);
+					//System.out.println(numberWaysIn + " " + numberNodesIn);
 					insideWay = true;
 					lastWayNode = 0;
 					edgeList = new ArrayList<IncompleteEdge>();

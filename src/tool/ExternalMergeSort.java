@@ -28,7 +28,8 @@ class ExternalMergeSort {
 	protected int k = (int) (M/B);
 	protected LinkedList<String> files;
 	protected int sizeOfIncompleteNode = 24;
-	protected int sizeOfIncompleteEdge = 50;
+	//protected int sizeOfIncompleteEdge = 50;
+	protected int sizeOfIncompleteEdge = 60;
 	
 	/**
 	 * Set initial parameters.
