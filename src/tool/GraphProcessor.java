@@ -68,13 +68,17 @@ class GraphProcessor {
 				node.pointedFromTo = true;
 				try {
 					outEdges.writeUnshared(edge);
+					outEdges.reset();
 					edge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
 					while(true) {
 						try {
 							outNodes.writeUnshared(node);
+							outNodes.reset();
 							node = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
 						}
@@ -85,12 +89,15 @@ class GraphProcessor {
 			else if(edge.nodeID1 < node.id) {
 				try {
 					edge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
 					while(true) {
 						try {
 							outNodes.writeUnshared(node);
+							outNodes.reset();
 							node = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
 						}
@@ -101,7 +108,9 @@ class GraphProcessor {
 			else {
 				try {
 					outNodes.writeUnshared(node);
+					outNodes.reset();
 					node = (IncompleteNode) inNodes.readUnshared();
+					inNodes.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break
 					break;
@@ -176,6 +185,7 @@ class GraphProcessor {
 				if(!edge.oneway) {
 					try {
 						outEdges.writeUnshared(new IncompleteEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed,edge.travelTime));
+						outEdges.reset();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -183,19 +193,23 @@ class GraphProcessor {
 				
 				try {
 					outEdges.writeUnshared(edge);
+					outEdges.reset();
 					edge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
 					while(true) {
 						if(node.pointedFromTo) {
 							try {
 								outNodes.writeUnshared(node);
+								outNodes.reset();
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
 						}
 						try {
 							node = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
 						}
@@ -206,18 +220,21 @@ class GraphProcessor {
 			else if(edge.nodeID2 < node.id) {
 				try {
 					edge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
 					while(true) {
 						if(node.pointedFromTo) {
 							try {
 								outNodes.writeUnshared(node);
+								outNodes.reset();
 							} catch (IOException e1) {
 								e1.printStackTrace();
 							}
 						}
 						try {
 							node = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
 						}
@@ -229,8 +246,10 @@ class GraphProcessor {
 				try {
 					if(node.pointedFromTo) {
 						outNodes.writeUnshared(node);
+						outNodes.reset();
 					}
 					node = (IncompleteNode) inNodes.readUnshared();
+					inNodes.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break
 					break;
@@ -332,6 +351,7 @@ class GraphProcessor {
 				}
 				try {
 					inEdge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
 					/*if(node.edges.size() > 0) {
@@ -347,12 +367,14 @@ class GraphProcessor {
 							numberNodesOut++;
 							numberEdgesOut += node.edges.size();
 							out.writeUnshared(node);
+							out.reset();
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						try {
 							inNode = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 							node = new Node(inNode.id,inNode.lat,inNode.lon);
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
@@ -364,6 +386,7 @@ class GraphProcessor {
 			else if(inEdge.nodeID1 < node.id) {
 				try {
 					inEdge = (IncompleteEdge) inEdges.readUnshared();
+					inEdges.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
 					/*if(node.edges.size() > 0) {
@@ -379,12 +402,14 @@ class GraphProcessor {
 							numberNodesOut++;
 							numberEdgesOut += node.edges.size();
 							out.writeUnshared(node);
+							out.reset();
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						try {
 							inNode = (IncompleteNode) inNodes.readUnshared();
+							inNodes.reset();
 							node = new Node(inNode.id,inNode.lat,inNode.lon);
 						} catch (ClassNotFoundException | IOException e1) {
 							break;
@@ -402,7 +427,9 @@ class GraphProcessor {
 					numberNodesOut++;
 					numberEdgesOut += node.edges.size();
 					out.writeUnshared(node);
+					out.reset();
 					inNode = (IncompleteNode) inNodes.readUnshared();
+					inNodes.reset();
 					node = new Node(inNode.id,inNode.lat,inNode.lon);
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break

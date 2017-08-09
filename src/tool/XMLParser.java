@@ -263,6 +263,7 @@ class XMLParser {
 						numberNodesOut++;
 						//System.out.println(numberNodesOut +" "+id);
 						outN.writeUnshared(new IncompleteNode(id,lat,lon));
+						outN.reset();
 					}
 				}
 				else if(type.equalsIgnoreCase("way")) {
@@ -287,6 +288,7 @@ class XMLParser {
 							//IncompleteEdge edge = edgeList.get(i);
 							//System.out.println("Edge from "+edge.nodeID1+ " to "+edge.nodeID2+" of type "+edge.type);
 							outE.writeUnshared(edgeList.get(i));
+							outE.reset();
 						}
 					}
 				}

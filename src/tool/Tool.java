@@ -36,6 +36,7 @@ public class Tool {
 		while(true) {
 			try {
 				node = (Node) oin.readUnshared();
+				oin.reset();
 				ret.add(node);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -65,6 +66,7 @@ public class Tool {
 		while(true) {
 			try {
 				node = (Node) oin.readUnshared();
+				oin.reset();
 				ret.add(node);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -123,6 +125,7 @@ public class Tool {
 		if(open) {
 			try {
 				ret = (Node) in.readUnshared();
+				in.reset();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
