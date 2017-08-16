@@ -157,7 +157,22 @@ class Validator {
 									}
 								}
 								else if(attribute.getValue().equalsIgnoreCase("maxspeed")) {
-									int maxspeed = Integer.parseInt(v);
+									int maxspeed = 0;
+									try {
+										maxspeed = Integer.parseInt(v);
+									}
+									catch(NumberFormatException e){
+										// If not an integer
+										if(v.contains("urban")) {
+											maxspeed = 50;
+										}
+										else if(v.contains("rural")) {
+											maxspeed = 80;
+										}
+										else if(v.contains("motorway")) {
+											maxspeed = 130;
+										}
+								    }
 									for(int i = 0; i < edgeList.size(); i++) {
 										edgeList.get(i).maxSpeed = maxspeed;
 									}
