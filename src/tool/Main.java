@@ -59,6 +59,9 @@ public class Main {
 						+ "specified type of roads. See http://wiki.openstreetmap.org/wiki/Key:highway for filters.");
 				System.out.println("=== Parse <input> <output> === Given a .osm file parses it into a file of Nodes."
 						+ " If Box/Filter has been set they will be applied to the Nodes.");
+				System.out.println("=== Alternative <input> <output> === Given a .osm file parses it into a file of Nodes."
+						+ " If Box/Filter has been set they will be applied to the Nodes. This method is theoretically faster than Parse +"
+						+ "for .osm files roughly matching the bounding box, or when not using a bounding box.");
 				System.out.println("=== Print console <input> === Prints a Node file to console. Think twice before using this function!");
 				System.out.println("=== Print <input> === Prints a Node file to <input>.txt. This is to manually review small Node files.");
 				System.out.println("=== Validate <Node file> <.osm file> === Validates the Node file up against the .osm file. Assumes the .osm "
@@ -270,6 +273,16 @@ public class Main {
 					System.out.println("Incorrect number of arguments");
 				}
 			}
+			else if(split[0].equalsIgnoreCase("alternative")) {
+				if(split.length == 3) {
+					String input = split[1];
+					String output = split[2];
+					alternativeParseAndProcess(input, output);
+				}
+				else {
+					System.out.println("Incorrect number of arguments");
+				}
+			}
 			else {
 				System.out.println("Unknown Command");
 			}
@@ -309,6 +322,47 @@ public class Main {
 			gp.thirdPassCombineIncompleteNodeEdge("node4", "edge6", output);
 			Files.delete(new File("node4").toPath());
 			Files.delete(new File("edge6").toPath());
+			timeProcess = System.currentTimeMillis() - timeMid;
+			System.out.println("Processing finihed in time "+timeProcess);
+			System.out.println("Output #Nodes = "+gp.numberNodesOut);
+			System.out.println("Output #Edges = "+gp.numberEdgesOut);
+			timeTotal = timeParse + timeProcess;
+			System.out.println("Total time was "+timeTotal);
+		} catch (XMLStreamException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected static void alternativeParseAndProcess(String input, String output) {
+		XMLParser parser = new XMLParser();
+		ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
+		GraphProcessor gp = new GraphProcessor(M, B);
+		long timeStart, timeMid, timeParse, timeProcess, timeTotal;
+		try {
+			timeStart = System.currentTimeMillis();
+			parser.alternativeParse(input, "node1", "edge1", B, filters, 
+					minLat, maxLat, minLon, maxLon);
+			timeParse= System.currentTimeMillis() - timeStart;
+			System.out.println("Parsing finished in time "+timeParse);
+			System.out.println("Input #Nodes = "+parser.numberNodesIn);
+			System.out.println("Input #Ways = "+parser.numberWaysIn);
+			System.out.println("Output #Nodes = "+parser.numberNodesOut);
+			System.out.println("Output #Edges = "+parser.numberEdgesOut);
+			timeMid = System.currentTimeMillis();
+			ems.sortIncompleteNodes("node1", "node2");
+			Files.delete(new File("node1").toPath());
+			ems.sortIncompleteEdgesByNodeID2("edge1", "edge2");
+			Files.delete(new File("edge1").toPath());
+			gp.alternativeFirstPass("node2", "edge2", "node3","edge3");
+			Files.delete(new File("node2").toPath());
+			Files.delete(new File("edge2").toPath());
+			ems.sortIncompleteEdgesByNodeID1("edge3", "edge4");
+			Files.delete(new File("edge3").toPath());
+			gp.alternativeSecondPass("node3", "edge4", output);
+			Files.delete(new File("node3").toPath());
+			Files.delete(new File("edge4").toPath());
 			timeProcess = System.currentTimeMillis() - timeMid;
 			System.out.println("Processing finihed in time "+timeProcess);
 			System.out.println("Output #Nodes = "+gp.numberNodesOut);

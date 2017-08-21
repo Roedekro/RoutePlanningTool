@@ -513,4 +513,258 @@ class GraphProcessor {
 		return (int) Math.round((distance / (max * 27.7777778)) * 1000);
 	}
 
+	/**
+	 * Runs through edges by nodeID2 and filters out any that doesnt have a node present.
+	 * Marks nodes with pointed to/from. Populates the lon/lats of the edges.
+	 *@param nodesInput File containing sorted IncompleteNodes
+	 * @param edgesInput File containing IncompleteEdges sorted by nodeID2
+	 * @param nodesOutput File that will contain the filtered sorted list of IncompleteNodes
+	 * @param edgesOutput File that will contain the filtered sorted list of IncompleteEdges
+	 */
+	protected void alternativeFirstPass(String nodesInput, String edgesInput, String nodesOutput, String edgesOutput) {
+		
+		ObjectInputStream inNodes = null;
+		ObjectInputStream inEdges = null;
+		ObjectOutputStream outNodes = null;
+		ObjectOutputStream outEdges = null;
+		
+		try {
+			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodesInput),B));
+			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edgesInput),B));
+			outNodes = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(nodesOutput),B));
+			outEdges = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(edgesOutput),B));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		IncompleteNode node = null;
+		IncompleteEdge edge = null;
+		try {
+			node = (IncompleteNode) inNodes.readUnshared();
+			edge = (IncompleteEdge) inEdges.readUnshared();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+		
+		// Loop through the two files until one runs out
+		while(true) {
+			
+			if(edge.nodeID2 == node.id) {
+				
+				edge.lat = node.lat;
+				edge.lon = node.lon;
+				node.pointedFromTo = true;
+							
+				try {
+					outEdges.writeUnshared(edge);
+					//outEdges.reset();
+					edge = (IncompleteEdge) inEdges.readUnshared();
+					//inEdges.reset();
+				} catch (IOException | ClassNotFoundException e) {
+					// Ran out of edges, break
+					while(true) {
+
+						try {
+							outNodes.writeUnshared(node);
+							//outNodes.reset();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+
+						try {
+							node = (IncompleteNode) inNodes.readUnshared();
+							//inNodes.reset();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
+					break;
+				}
+			}
+			else if(edge.nodeID2 < node.id) {
+				try {
+					edge = (IncompleteEdge) inEdges.readUnshared();
+					//inEdges.reset();
+				} catch (ClassNotFoundException | IOException e) {
+					// Ran out of edges, break
+					while(true) {
+						try {
+							outNodes.writeUnshared(node);
+							//outNodes.reset();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						try {
+							node = (IncompleteNode) inNodes.readUnshared();
+							//inNodes.reset();
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
+					break;
+				}
+			}
+			else {
+				try {
+					outNodes.writeUnshared(node);
+					node = (IncompleteNode) inNodes.readUnshared();
+				} catch (ClassNotFoundException | IOException e) {
+					// Ran out of nodes, break
+					break;
+				}
+			}
+		}
+		
+		// Clean up
+		try {
+			outNodes.flush();
+			outNodes.close();
+			outEdges.flush();
+			outEdges.close();
+			inNodes.close();
+			inEdges.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Runs through edges by nodeID1 and filters out any that doesnt have a node present.
+	 * Then adds the edges to the nodes and writes out nodes pointed to/from.
+	 * @param nodes File containing sorted IncompleteNodes
+	 * @param edges File containing IncompleteEdges sorted by nodeID1
+	 * @param output File that will contain the finished sorted list of Nodes with Edges
+	 */
+	protected void alternativeSecondPass(String nodes, String edges, String output) {
+		
+		numberNodesOut = 0;
+		numberEdgesOut = 0;
+		
+		//long numberOfEdgesIn = 0;
+		
+		ObjectInputStream inNodes = null;
+		ObjectInputStream inEdges = null;
+		ObjectOutputStream out = null;
+		
+		try {
+			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodes),B));
+			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edges),B));
+			out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(output),B));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		//numberOfEdgesIn++;
+		
+		IncompleteNode inNode = null;
+		IncompleteEdge inEdge = null;
+		Node node = null;
+		Edge edge = null;
+		try {
+			inNode = (IncompleteNode) inNodes.readUnshared();
+			inEdge = (IncompleteEdge) inEdges.readUnshared();
+		} catch (ClassNotFoundException | IOException e) {
+			e.printStackTrace();
+		}
+		node = new Node(inNode.id,inNode.lat,inNode.lon);
+		
+		// Loop through the two files until one runs out
+		while(true) {
+			
+			if(inEdge.nodeID1 == node.id) {
+				if(inEdge.nodeID2 != node.id) {
+					inNode.pointedFromTo = true;
+					// No pointing to yourself
+					edge = new Edge(inEdge.nodeID2,inEdge.type,inEdge.distance,inEdge.maxSpeed,inEdge.travelTime);
+					// Calculate the distance
+					int distance = calculateDistance(node.lat, node.lon, inEdge.lat, inEdge.lon);
+					edge.distance = distance;
+					int travelTime = calculateTravelTime(distance, edge.maxSpeed, edge.type);
+					edge.travelTime = travelTime;
+					node.addEdge(edge);
+				}
+				try {
+					inEdge = (IncompleteEdge) inEdges.readUnshared();
+					//numberOfEdgesIn++;
+				} catch (IOException | ClassNotFoundException e) {
+					// Ran out of edges, break
+					while(true) {
+						try {
+							if(inNode.pointedFromTo) {
+								numberNodesOut++;
+								numberEdgesOut += node.edges.size();
+								out.writeUnshared(node);
+							}
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						try {
+							inNode = (IncompleteNode) inNodes.readUnshared();
+							node = new Node(inNode.id,inNode.lat,inNode.lon);
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}		
+					break;
+				}
+			}
+			else if(inEdge.nodeID1 < node.id) {
+				try {
+					inEdge = (IncompleteEdge) inEdges.readUnshared();
+					//numberOfEdgesIn++;
+					//inEdges.reset();
+				} catch (ClassNotFoundException | IOException e) {
+					// Ran out of edges, break
+					while(true) {
+						try {
+							if(inNode.pointedFromTo) {
+								numberNodesOut++;
+								numberEdgesOut += node.edges.size();
+								out.writeUnshared(node);
+							}
+							
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							inNode = (IncompleteNode) inNodes.readUnshared();
+							//inNodes.reset();
+							node = new Node(inNode.id,inNode.lat,inNode.lon);
+						} catch (ClassNotFoundException | IOException e1) {
+							break;
+						}
+					}
+					break;
+				}
+			}
+			else {
+				try {
+					if(inNode.pointedFromTo) {
+						numberNodesOut++;
+						numberEdgesOut += node.edges.size();
+						out.writeUnshared(node);
+					}
+					inNode = (IncompleteNode) inNodes.readUnshared();
+					node = new Node(inNode.id,inNode.lat,inNode.lon);
+				} catch (ClassNotFoundException | IOException e) {
+					// Ran out of nodes, break
+					break;
+				}
+			}
+		}
+		
+		//System.out.println("Number Edges in = "+numberOfEdgesIn);
+		
+		// Clean up
+		try {
+			out.flush();
+			out.close();
+			inNodes.close();
+			inEdges.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
 }
