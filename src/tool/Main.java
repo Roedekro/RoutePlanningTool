@@ -283,6 +283,9 @@ public class Main {
 					System.out.println("Incorrect number of arguments");
 				}
 			}
+			else if(split[0].equalsIgnoreCase("")) {
+				// Do nothing
+			}
 			else {
 				System.out.println("Unknown Command");
 			}
