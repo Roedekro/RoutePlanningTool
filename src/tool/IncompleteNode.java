@@ -6,7 +6,7 @@ import java.io.Serializable;
  * @author Martin
  *
  */
-class IncompleteNode implements Serializable{
+public class IncompleteNode implements Serializable{
 
 	private static final long serialVersionUID = -4896887724692721954L;
 	protected long id;
@@ -14,7 +14,7 @@ class IncompleteNode implements Serializable{
 	protected double lon;
 	protected boolean pointedFromTo = false;
 	
-	protected IncompleteNode(long id, double lat2, double lon2) {
+	public IncompleteNode(long id, double lat2, double lon2) {
 		this.id = id;
 		this.lat = lat2;
 		this.lon = lon2;

@@ -6,7 +6,7 @@ import java.io.Serializable;
  * @author Martin
  *
  */
-class IncompleteEdge implements Serializable {
+public class IncompleteEdge implements Serializable {
 
 	private static final long serialVersionUID = 8532488463189916384L;
 	protected long nodeID1 = 0;
