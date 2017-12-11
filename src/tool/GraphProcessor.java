@@ -1294,8 +1294,8 @@ class GraphProcessor {
 				edge = node.edges.get(j);
 				if(names.contains(edge.street)) {
 					int index = names.indexOf(edge.street);
-					int counter = counters.get(index);
-					counter++;
+					// Ugly code, necessary for ArrayList
+					counters.set(index, counters.get(index)+1);
 				}
 				else {
 					names.add(edge.street);
@@ -1307,8 +1307,8 @@ class GraphProcessor {
 				edge = node.reverseEdges.get(j);
 				if(names.contains(edge.street)) {
 					int index = names.indexOf(edge.street);
-					int counter = counters.get(index);
-					counter++;
+					// Ugly code, necessary for ArrayList
+					counters.set(index, counters.get(index)+1);
 				}
 				else {
 					names.add(edge.street);
@@ -1410,8 +1410,10 @@ class GraphProcessor {
 					node = candidates.get(j);
 					if(node.street.equalsIgnoreCase(address.streetName)) {
 						// Rough estimate, because we are within 25m its okay.
-						double distance = Math.sqrt(Math.pow(Math.abs(node.lat - address.lat), 2) 
-								+ Math.pow(Math.abs(node.lon - address.lon), 2));
+						/*double distance = Math.sqrt(Math.pow(Math.abs(node.lat - address.lat), 2) 
+								+ Math.pow(Math.abs(node.lon - address.lon), 2));*/
+						double distance = Math.sqrt(Math.pow(node.lat - address.lat, 2) 
+								+ Math.pow(node.lon - address.lon, 2));
 						if( distance < closest) {
 							bestCandidate = j;
 							closest = distance;

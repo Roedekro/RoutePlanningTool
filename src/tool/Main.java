@@ -392,18 +392,10 @@ public class Main {
 		GraphProcessor gp = new GraphProcessor(M, B);
 		long timeStart, timeMid, timeParse, timeProcess, timeTotal;
 		try {
-			timeStart = System.currentTimeMillis();
 			// New parse spits out a file of IncompleteAdrNodes
 			parser.parseBoxAndFilterEdgesWithAddresses(input, "node1", "edge1", "adr1", B, filters, 
 					minLat, maxLat, minLon, maxLon);
-			timeParse= System.currentTimeMillis() - timeStart;
-			System.out.println("Parsing finished in time "+timeParse);
-			System.out.println("Input #Nodes = "+parser.numberNodesIn);
-			System.out.println("Input #Ways = "+parser.numberWaysIn);
-			System.out.println("Output #Nodes = "+parser.numberNodesOut);
-			System.out.println("Output #Edges = "+parser.numberEdgesOut);
 			// Nearly normal buildup of the road network.
-			timeMid = System.currentTimeMillis();
 			ems.sortIncompleteNodes("node1", "node2");
 			Files.delete(new File("node1").toPath());
 			ems.sortIncompleteEdgesByNodeID2("edge1", "edge2");
@@ -416,12 +408,7 @@ public class Main {
 			gp.alternativeSecondPass("node3", "edge4", output);
 			Files.delete(new File("node3").toPath());
 			Files.delete(new File("edge4").toPath());
-			timeProcess = System.currentTimeMillis() - timeMid;
-			System.out.println("Processing finihed in time "+timeProcess);
-			System.out.println("Output #Nodes = "+gp.numberNodesOut);
-			System.out.println("Output #Edges = "+gp.numberEdgesOut);
-			timeTotal = timeParse + timeProcess;
-			System.out.println("Total time was "+timeTotal);
+			
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
