@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -38,6 +39,7 @@ class XMLParser {
 	protected long numberWaysIn = 0;
 	protected long numberNodesOut = 0;
 	protected long numberEdgesOut = 0;
+	protected long numberOfAddressesOut = 0;
 	
 	/**
 	 * Parses a .osm file
@@ -551,7 +553,7 @@ class XMLParser {
 	 * @param maxLon Maximum latitude
 	 * @throws XMLStreamException
 	 * @throws IOException 
-	 */
+	 */	
 	protected void parseBoxAndFilterEdgesWithAddresses(String input, String nodeOutput, String edgeOutput, String addressOutput, 
 			int B, ArrayList<String> filters, double minLat,	double maxLat, double minLon, 
 			double maxLon) 
@@ -570,10 +572,12 @@ class XMLParser {
 		XMLEventReader reader = xif.createXMLEventReader(is);
 		long id = 0;
 		double lon = 0, lat = 0;
+		//BigDecimal lon = null, lat = null;
 		boolean insideWay = false;
 		boolean address = false;
 		String streetName = null;
-		int houseNumber = 0;
+		//int houseNumber = 0;
+		String houseNumber = null;
 		long lastWayNode = 0;
 		long firstWayNode = 0;
 		String v = null;
@@ -597,9 +601,11 @@ class XMLParser {
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lat")) {
 							lat = Double.parseDouble(attribute.getValue());
+							//lat = new BigDecimal(attribute.getValue());
 						}
 						else if(attribute.getName().getLocalPart().equalsIgnoreCase("lon")) {
 							lon = Double.parseDouble(attribute.getValue());
+							//lon = new BigDecimal(attribute.getValue());
 						}						
 					}
 				}
@@ -705,14 +711,22 @@ class XMLParser {
 							if(attribute.getName().getLocalPart().equalsIgnoreCase("k")) {
 								if(attribute.getValue().equalsIgnoreCase("addr:housenumber")) {
 									address = true;
+									houseNumber = v;
+									/* Deprecated
 									// Remove e.g. A from 16A.
 									String[] temp = v.split("[A-Z]");
 									houseNumber = Integer.parseInt(temp[0]);
+									*/
+									//System.out.println("House number " + houseNumber);
 								}
 								else if(attribute.getValue().equalsIgnoreCase("addr:street")) {
 									streetName = v;
+									//System.out.println("Street " + streetName);
 								}
 							}
+							else if(attribute.getName().getLocalPart().equalsIgnoreCase("v")) {
+								v = attribute.getValue();
+							}	
 						}
 					}
 				}
@@ -724,18 +738,20 @@ class XMLParser {
 			else if(event.getEventType() == XMLStreamConstants.END_ELEMENT) {
 				EndElement end = event.asEndElement();
 				String type = end.getName().getLocalPart();
-				if(type.equalsIgnoreCase("node")) {
-					//System.out.println("Node: id="+id+" lat="+lat+" lon="+lon);
+				if(type.equalsIgnoreCase("node")) {			
 					if(minLat <= lat && lat <= maxLat && minLon <= lon && lon <= maxLon) {
 						if(!address) {
 							numberNodesOut++;
 							//System.out.println(numberNodesOut +" "+id);
-							outN.writeUnshared(new IncompleteNode(id,lat,lon));
-							//outN.writeObject(new IncompleteNode(id,lat,lon));
+							//outN.writeUnshared(new IncompleteNode(id,lat.doubleValue(),lon.doubleValue()));
+							outN.writeObject(new IncompleteNode(id,lat,lon));
 							//outN.reset();
 						}
 						else {
+							numberOfAddressesOut++;
+							//outA.writeUnshared(new IncompleteAdrNode(id,lat.doubleValue(),lon.doubleValue(),streetName,houseNumber));
 							outA.writeUnshared(new IncompleteAdrNode(id,lat,lon,streetName,houseNumber));
+							//System.out.println(streetName + " " + houseNumber);
 						}
 						
 					}

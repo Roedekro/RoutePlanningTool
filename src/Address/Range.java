@@ -16,7 +16,7 @@ public class Range {
 	}
 	
 	/*
-	 * 
+	 * Contains range
 	 */
 	public boolean contains(Range range) {
         return (latMin <= range.latMin &&
@@ -35,14 +35,17 @@ public class Range {
 
     /*
      * Does the given range intersect this range
-     * also works as a contains!
      */
     public boolean intersects(Range range) {
-    	return ((latMin <= range.latMin && range.latMin <= latMax) || 
-    			(latMin <= range.latMax && range.latMax <= latMax) || 
-    			(lonMin <= range.lonMin && range.lonMin <= lonMax) || 
-    			(lonMin <= range.lonMax && range.lonMax <= lonMax));
+    	return (((latMin <= range.latMin && range.latMin <= latMax) || 
+    			(latMin <= range.latMax && range.latMax <= latMax)) || 
+    			((lonMin <= range.lonMin && range.lonMin <= lonMax) || 
+    			(lonMin <= range.lonMax && range.lonMax <= lonMax)));
     }
 	
+    public void printRange() {
+    	System.out.println(Double.toString(latMin) + " " + Double.toString(latMax) + " " +
+				Double.toString(lonMin) + " " + Double.toString(lonMax));
+    }
 	
 }

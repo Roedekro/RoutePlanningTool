@@ -62,6 +62,8 @@ public class Main {
 				System.out.println("=== Alternative <input> <output> === Given a .osm file parses it into a file of Nodes."
 						+ " If Box/Filter has been set they will be applied to the Nodes. This method is theoretically faster than Parse +"
 						+ "for .osm files roughly matching the bounding box, or when not using a bounding box.");
+				System.out.println("=== Address <input> <output.xml> === Given a .osm file generates a .xml file containing the road network " + 
+						"complete with addresses. Note, the graph addresses are handled in internal memory!");
 				System.out.println("=== Print console <input> === Prints a Node file to console. Think twice before using this function!");
 				System.out.println("=== Print <input> === Prints a Node file to <input>.txt. This is to manually review small Node files.");
 				System.out.println("=== Validate <Node file> <.osm file> === Validates the Node file up against the .osm file. Assumes the .osm "
@@ -141,6 +143,7 @@ public class Main {
 					maxLat = Double.parseDouble(split[2]);
 					minLon = Double.parseDouble(split[3]);
 					maxLon = Double.parseDouble(split[4]);
+					System.out.println("New box set");
 				}
 				else {
 					System.out.println("Incorrect number of arguments");
@@ -170,6 +173,7 @@ public class Main {
 					filters.add("tertiary_link");
 					filters.add("living_street");
 					filters.add("road");
+					System.out.println("Car filters set");
 				}
 				else {
 					if(filterSet) {
@@ -178,7 +182,8 @@ public class Main {
 					filterSet = true;
 					for(int i = 1; i < split.length; i++) {
 						filters.add(split[i]);
-					}				
+					}
+					System.out.println("Custom filters set");
 				}
 			}
 			else if(split[0].equalsIgnoreCase("Parse")) {
@@ -278,6 +283,16 @@ public class Main {
 					String input = split[1];
 					String output = split[2];
 					alternativeParseAndProcess(input, output);
+				}
+				else {
+					System.out.println("Incorrect number of arguments");
+				}
+			}
+			else if(split[0].equalsIgnoreCase("address")) {
+				if(split.length == 3) {
+					String input = split[1];
+					String output = split[2];
+					parseAndProcessWithAddresses(input, output);
 				}
 				else {
 					System.out.println("Incorrect number of arguments");
@@ -390,24 +405,42 @@ public class Main {
 		XMLParser parser = new XMLParser();
 		ExternalMergeSort ems = new ExternalMergeSort(M,B,k);
 		GraphProcessor gp = new GraphProcessor(M, B);
-		long timeStart, timeMid, timeParse, timeProcess, timeTotal;
 		try {
 			// New parse spits out a file of IncompleteAdrNodes
+			System.out.println("Parsing");
+			//minLon = 10.18; maxLon = 10.215; minLat = 56.14; maxLat = 56.175;
 			parser.parseBoxAndFilterEdgesWithAddresses(input, "node1", "edge1", "adr1", B, filters, 
 					minLat, maxLat, minLon, maxLon);
+			System.out.println("Parser generated " + parser.numberNodesOut + " nodes, " + 
+					parser.numberEdgesOut + " edges and " + parser.numberOfAddressesOut + " addresses");
 			// Nearly normal buildup of the road network.
+			System.out.println("Initial Sort");
 			ems.sortIncompleteNodes("node1", "node2");
 			Files.delete(new File("node1").toPath());
-			ems.sortIncompleteEdgesByNodeID2("edge1", "edge2");
+			ems.sortIncompleteAdrEdgesByNodeID1("edge1", "edge2");
 			Files.delete(new File("edge1").toPath());
-			gp.alternativeFirstPass("node2", "edge2", "node3","edge3");
+			System.out.println("First pass");
+			gp.firstPassAddress("node2", "edge2", "node3","edge3");
 			Files.delete(new File("node2").toPath());
 			Files.delete(new File("edge2").toPath());
-			ems.sortIncompleteEdgesByNodeID1("edge3", "edge4");
+			ems.sortIncompleteAdrEdgesByNodeID2("edge3", "edge4");
 			Files.delete(new File("edge3").toPath());
-			gp.alternativeSecondPass("node3", "edge4", output);
+			System.out.println("Second pass");
+			gp.secondPassAddress("node3", "edge4", "node4","edge5");
 			Files.delete(new File("node3").toPath());
 			Files.delete(new File("edge4").toPath());
+			ems.sortIncompleteAdrEdgesByNodeID1("edge5", "edge6");
+			Files.delete(new File("edge5").toPath());
+			System.out.println("Third pass");
+			gp.thirdPassAddress("node4", "edge6", "roadnetwork");
+			Files.delete(new File("node4").toPath());
+			Files.delete(new File("edge6").toPath());
+			/*System.out.println("Graph Processor returned " + gp.numberNodesOut + " nodes and "+
+					gp.numberEdgesOut + " edges");*/
+			System.out.println("Final pass");
+			gp.fourthPassAddress("roadnetwork", "adr1", output);
+			Files.delete(new File("roadnetwork").toPath());
+			Files.delete(new File("adr1").toPath());
 			
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
@@ -418,7 +451,7 @@ public class Main {
 	
 	protected static void test() {
 		
-		Tool tool = new Tool();
+		/*Tool tool = new Tool();
 		try {
 			tool.getNodesAsArrayList("Roedekro");
 		} catch (FileNotFoundException e2) {
@@ -427,10 +460,41 @@ public class Main {
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
-		}
+		}*/
 		
-		Test test = new Test();
+		/*if(filterSet) {
+			filters = new ArrayList<String>();
+		}
+		filterSet = true;
+		filters.add("motorway");
+		filters.add("trunk");
+		filters.add("primary");
+		filters.add("secondary");
+		filters.add("tertiary");
+		filters.add("unclassified");
+		filters.add("residential");
+		filters.add("service");
+		filters.add("motorway_link");
+		filters.add("trunk_link");
+		filters.add("primary_link");
+		filters.add("secondary_link");
+		filters.add("tertiary_link");
+		filters.add("living_street");
+		filters.add("road");
+		parseAndProcessWithAddresses("katrinebjerg.osm", "katrinebjerg.xml");*/
+		
+		//Test test = new Test();
 		//test.run();	
+		
+		// Draw
+		Tool tool = new Tool();
+		try {
+			//tool.createAndFillImage("addressGraph.txt", "AarhusRing1.png", 350, 350, 56.14, 56.175, 10.18, 10.215);
+			tool.createAndFillImage("addressGraph.txt", "AarhusRing1.png", 525, 350, 56.14, 56.175, 10.18, 10.215);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 }

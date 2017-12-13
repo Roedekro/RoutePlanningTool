@@ -182,7 +182,8 @@ public class Tool {
 			if(y < 0) {
 				y = 0;
 			}
-			y = height - y;
+			y = height - 1 - y;
+			//System.out.println(x + " " + y);
 			img.setRGB(x, y, Color.GRAY.getRGB());
 		}
 		in.close();

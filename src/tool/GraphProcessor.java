@@ -1,10 +1,12 @@
 package tool;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -823,6 +825,8 @@ class GraphProcessor {
 			e.printStackTrace();
 		}
 		
+		int ncounter = 0;
+		int ecounter = 0;
 		// Loop through the two files until one runs out
 		while(true) {
 			
@@ -831,14 +835,17 @@ class GraphProcessor {
 				edge.lon = node.lon;
 				node.pointedFromTo = true;
 				try {
+					ecounter++;
 					outEdges.writeUnshared(edge);
 					//outEdges.reset();
 					edge = (IncompleteAdrEdge) inEdges.readUnshared();
 					//inEdges.reset();
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
+					//System.out.println("Ran out of edges y");
 					while(true) {
 						try {
+							ncounter++;
 							outNodes.writeUnshared(node);
 							//outNodes.reset();
 							node = (IncompleteNode) inNodes.readUnshared();
@@ -856,8 +863,10 @@ class GraphProcessor {
 					//inEdges.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
+					//System.out.println("Ran out of edges x");
 					while(true) {
 						try {
+							ncounter++;
 							outNodes.writeUnshared(node);
 							//outNodes.reset();
 							node = (IncompleteNode) inNodes.readUnshared();
@@ -871,12 +880,14 @@ class GraphProcessor {
 			}
 			else {
 				try {
+					ncounter++;
 					outNodes.writeUnshared(node);
 					//outNodes.reset();
 					node = (IncompleteNode) inNodes.readUnshared();
 					//inNodes.reset();
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of nodes, break
+					//System.out.println("Ran out of nodes x");
 					break;
 				}
 			}
@@ -893,7 +904,7 @@ class GraphProcessor {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		//System.out.println(ncounter + " " + ecounter);
 	}
 	
 	/**
@@ -934,9 +945,13 @@ class GraphProcessor {
 			e.printStackTrace();
 		}
 		
+		int counter = 0;
+		int ncounter = 0;
+		int ecounter = 0;
 		// Loop through the two files until one runs out
 		while(true) {
 			
+			counter++;
 			if(edge.nodeID2 == node.id) {
 				
 				node.pointedFromTo = true;
@@ -948,7 +963,8 @@ class GraphProcessor {
 				edge.travelTime = travelTime;
 				
 				// Calculate the angle
-				int angle = calculateAngle(node.lat, node.lon, edge.lat, edge.lon);
+				//int angle = calculateAngle(node.lat, node.lon, edge.lat, edge.lon);
+				int angle = calculateAngle(edge.lat, edge.lon,node.lat, node.lon);
 				edge.angle = angle;
 				
 				// If not oneway add a copy with switched nodeID1 and nodeID2
@@ -965,6 +981,7 @@ class GraphProcessor {
 						else {
 							oppositeAngle = 0;
 						}
+						ecounter++;
 						outEdges.writeUnshared(new IncompleteAdrEdge(edge.nodeID2,edge.nodeID1,edge.type,distance,edge.maxSpeed,edge.travelTime,edge.streetName,oppositeAngle));
 						//outEdges.reset();
 					} catch (IOException e) {
@@ -973,6 +990,7 @@ class GraphProcessor {
 				}
 				
 				try {
+					ecounter++;
 					outEdges.writeUnshared(edge);
 					//outEdges.reset();
 					edge = (IncompleteAdrEdge) inEdges.readUnshared();
@@ -982,6 +1000,8 @@ class GraphProcessor {
 					while(true) {
 						if(node.pointedFromTo) {
 							try {
+								ncounter++;
+								//System.out.println(node.id);
 								outNodes.writeUnshared(node);
 								//outNodes.reset();
 							} catch (IOException e1) {
@@ -1007,6 +1027,8 @@ class GraphProcessor {
 					while(true) {
 						if(node.pointedFromTo) {
 							try {
+								ncounter++;
+								//System.out.println(node.id);
 								outNodes.writeUnshared(node);
 								//outNodes.reset();
 							} catch (IOException e1) {
@@ -1026,6 +1048,8 @@ class GraphProcessor {
 			else {
 				try {
 					if(node.pointedFromTo) {
+						ncounter++;
+						//System.out.println(node.id);
 						outNodes.writeUnshared(node);
 						//outNodes.reset();
 					}
@@ -1049,7 +1073,8 @@ class GraphProcessor {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		//System.out.println("Counter="+counter);
+		//System.out.println(ncounter + " " + ecounter);
 	}
 	
 	/**
@@ -1072,6 +1097,37 @@ class GraphProcessor {
 		ObjectInputStream inEdges = null;
 		ObjectOutputStream out = null;
 		
+		
+		/*try {
+			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodes),B));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		int c = 0;
+		while(true) {
+			try {
+				c++;
+				IncompleteNode temp = (IncompleteNode) inNodes.readUnshared();
+				System.out.println(temp.id);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				break;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.out.println("IOEXCEPTION!");
+				e.printStackTrace();
+				break;
+			}
+		}
+		System.out.println(c);
+		try {
+			inNodes.close();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}*/
+		
 		try {
 			inNodes = new ObjectInputStream(new BufferedInputStream(new FileInputStream(nodes),B));
 			inEdges = new ObjectInputStream(new BufferedInputStream(new FileInputStream(edges),B));
@@ -1092,9 +1148,13 @@ class GraphProcessor {
 		}
 		node = new AdrNode(inNode.id,inNode.lat,inNode.lon);
 		
+		int counter = 0;
+		int readEdge = 1;
 		// Loop through the two files until one runs out
 		while(true) {
 			
+			counter++;
+			//System.out.println(inEdge.nodeID1 + " " + inEdge.nodeID2 + " " + node.id);
 			if(inEdge.nodeID1 == node.id) {
 				if(inEdge.nodeID2 != node.id) {
 					// No pointing to yourself
@@ -1104,6 +1164,7 @@ class GraphProcessor {
 				try {
 					inEdge = (IncompleteAdrEdge) inEdges.readUnshared();
 					//inEdges.reset();
+					readEdge++;
 				} catch (IOException | ClassNotFoundException e) {
 					// Ran out of edges, break
 					while(true) {
@@ -1131,6 +1192,7 @@ class GraphProcessor {
 				try {
 					inEdge = (IncompleteAdrEdge) inEdges.readUnshared();
 					//inEdges.reset();
+					readEdge++;
 				} catch (ClassNotFoundException | IOException e) {
 					// Ran out of edges, break
 					while(true) {
@@ -1163,8 +1225,13 @@ class GraphProcessor {
 					inNode = (IncompleteNode) inNodes.readUnshared();
 					//inNodes.reset();
 					node = new AdrNode(inNode.id,inNode.lat,inNode.lon);
-				} catch (ClassNotFoundException | IOException e) {
+				} catch (ClassNotFoundException e) {
 					// Ran out of nodes, break
+					//System.out.println("Ran out of nodes");
+					break;
+				} catch (IOException e) {
+					//System.out.println("IOException!");
+					e.printStackTrace();
 					break;
 				}
 			}
@@ -1180,6 +1247,9 @@ class GraphProcessor {
 			e.printStackTrace();
 		}
 		
+		//System.out.println("Counter="+counter);
+		//System.out.println(readEdge);
+		
 	}
 	
 	/*
@@ -1189,6 +1259,8 @@ class GraphProcessor {
 	 * The bearing between two long range points is not a constant.
 	 */
 	private int calculateAngle(double inlat, double inlon, double inlat2, double inlon2) {
+		
+		//763288512
 		
 		// Convert to radians
 		double lat = Math.toRadians(inlat);
@@ -1246,6 +1318,8 @@ class GraphProcessor {
 			}
 		}
 		
+		//System.out.println(nodes.size());
+		
 		System.out.println("Adding reverse edges");
 		// Add reverse edges
 		AdrNode source;
@@ -1279,10 +1353,11 @@ class GraphProcessor {
 		 * in the forward and reverse edge lists.
 		 * 
 		 * The reason we make the effort of counting reverse edges is due to
-		 * oneway streets.
+		 * oneway streets. Especially T-intersection of oneway streets.
 		 */
 		
 		System.out.println("Calculating streetnames");
+		//System.out.println(nodes.size());
 		AdrNode node;
 		ArrayList<String> names;
 		ArrayList<Integer> counters;
@@ -1292,33 +1367,41 @@ class GraphProcessor {
 			node = nodes.get(i);
 			for(int j = 0; j < node.edges.size(); j++) {
 				edge = node.edges.get(j);
-				if(names.contains(edge.street)) {
+				if(edge.street != null && !edge.street.equalsIgnoreCase("")) {
+					if(names.contains(edge.street)) {
 					int index = names.indexOf(edge.street);
 					// Ugly code, necessary for ArrayList
 					counters.set(index, counters.get(index)+1);
+					}
+					else {
+						names.add(edge.street);
+						counters.add(1);
+					}
 				}
-				else {
-					names.add(edge.street);
-					counters.add(1);
-				}
+				
 			}
 			
 			for(int j = 0; j < node.reverseEdges.size(); j++) {
 				edge = node.reverseEdges.get(j);
-				if(names.contains(edge.street)) {
-					int index = names.indexOf(edge.street);
-					// Ugly code, necessary for ArrayList
-					counters.set(index, counters.get(index)+1);
-				}
-				else {
-					names.add(edge.street);
-					counters.add(1);
+				if(edge.street != null && !edge.street.equalsIgnoreCase("")) {
+					if(names.contains(edge.street)) {
+						int index = names.indexOf(edge.street);
+						// Ugly code, necessary for ArrayList
+						counters.set(index, counters.get(index)+1);
+					}
+					else {
+						names.add(edge.street);
+						counters.add(1);
+					}
 				}
 			}
 			
 			// Determine if one street dominates the node
+			//System.out.println(names.size());
+			
 			if(names.size() == 1) {
 				node.street = names.get(0);
+				//System.out.println("Single street name "+node.street);
 			}
 			else {
 				int index = 0;
@@ -1337,6 +1420,7 @@ class GraphProcessor {
 				
 				if(dominates) {
 					node.street = names.get(index);
+					//System.out.println("Multi Street Name = "+node.street);
 				}
 				else {
 					node.street = "";
@@ -1348,13 +1432,15 @@ class GraphProcessor {
 		ArrayList<AdrNode> addressNodes = new ArrayList<AdrNode>();
 		for(int i = 0; i < nodes.size(); i++) {
 			node = nodes.get(i);
-			if(node.street != "") {
-				node.houseNumbers = new ArrayList<Integer>();
+			if(node.street != null && !node.street.equalsIgnoreCase("")) {
+				node.houseNumbers = new ArrayList<String>();
 				addressNodes.add(node);
+				//System.out.println("Street = " + node.street);
 			}
 		}
 		
 		System.out.println("Building K2-Tree");
+		//System.out.println(addressNodes.size());
 		AdrNodeCollection col = new AdrNodeCollection(addressNodes);
 		K2Tree tree = new K2Tree(col,1,null,new Range(Double.MIN_VALUE,Double.MAX_VALUE,
 				Double.MIN_VALUE,Double.MAX_VALUE));
@@ -1377,43 +1463,95 @@ class GraphProcessor {
 			try {
 				address = (IncompleteAdrNode) inAdr.readUnshared();
 				addresses.add(address);
+				//System.out.println(address.street + " " + address.house);
 			} catch (IOException | ClassNotFoundException e) {
 				break;
 			}
 		}
+		
+	
 		
 		System.out.println("Assigning addresses to road network nodes");
 		// Assign addresses to nodes
 		// We do this by searching for all road-network nodes in an area centered
 		// around the given address. We then determine the closest of these points
 		// that match the street name, and add the house number to this node.
-		// We abuse that 25m is roughly 0.00022500022 degrees in lat and lon.
-		double offset = 0.00022500022;
+		// We abuse that 1 degree lat is roughly 111131.75 meters,
+		// and 1 degree lon is roughly 78846.81 meters.
+		double offset = 25; // meters
+		double offsetLat = 1/111131.75*offset;
+		double offsetLon = 1/78846.81*offset;
+		
+		/*address = new IncompleteAdrNode(2,56.1745199,10.1884188,"Sandøgade","16");
+		Range range = new Range(address.lat-offset,address.lat+offset,
+				address.lon-offset,address.lon+offset);
+		System.out.println(Double.toString(range.latMin) + " " + Double.toString(range.latMax) + " " +
+				Double.toString(range.lonMin) + " " + Double.toString(range.lonMax));
+		System.out.println(56.1703079 <= range.latMin && range.latMin <= Double.MAX_VALUE);
+		System.out.println(56.1703079 <= range.latMax && range.latMax <= Double.MAX_VALUE);
+		System.out.println((56.1703079 <= range.latMin && range.latMin <= Double.MAX_VALUE) ||
+				(56.1703079 <= range.latMax && range.latMax <= Double.MAX_VALUE));
+		
+		ArrayList<AdrNode> candidates = tree.query(range);
+		System.out.println("Found " + candidates.size() + " candidates");*/
+		/*address = new IncompleteAdrNode(2,56.1745199,10.1884188,"Sandøgade","16");
+		Range range1 = new Range(address.lat-offset,address.lat+offset,
+				address.lon-offset,address.lon+offset);
+		System.out.println(tree.range.intersects(range1));*
+		range1.printRange();*/
+		/*System.out.println(tree.leftSubtree.range.intersects(range1));
+		tree.leftSubtree.range.printRange();
+		System.out.println(tree.rightSubtree.range.intersects(range1));
+		tree.rightSubtree.range.printRange();*/
+		/*ArrayList<AdrNode> candidates1 = tree.query(range1);
+		System.out.println(candidates1.size());
+		
+		System.out.println(tree.leftSubtree.leftSubtree.range.intersects(range1));
+		tree.leftSubtree.leftSubtree.range.printRange();
+		System.out.println(tree.leftSubtree.rightSubtree.range.intersects(range1));
+		tree.leftSubtree.rightSubtree.range.printRange();*/
+		
+		
 		for(int i = 0; i < addresses.size(); i++) {
 			address = addresses.get(i);
-			Range range = new Range(address.lat-offset,address.lat+offset,
-					address.lon-offset,address.lon+offset);
+			Range range = new Range(address.lat-offsetLat,address.lat+offsetLat,
+					address.lon-offsetLon,address.lon+offsetLon);
 			ArrayList<AdrNode> candidates = tree.query(range);
 			if(candidates.size() == 0) {
 				// Do nothing
+				/*System.out.println("Failed to find candidate for node "+address.id + " " +
+						address.street + " " + address.house);
+				System.out.println(address.lat + " " + address.lon);
+				System.out.println(range.contains(new AdrNode(2,56.1745199,10.1884188)));*/
 			}
 			else if(candidates.size() == 1) {
-				if(candidates.get(0).street.equalsIgnoreCase(address.streetName)) {
-					candidates.get(0).addHousenumber(address.houseNumber);
+				if(candidates.get(0).street.equalsIgnoreCase(address.street)) {
+					candidates.get(0).addHousenumber(address.house);
+					/*System.out.println("===Found ONE "+address.id + " " +
+							address.street + " " + address.house);*/
 				}
 			}
 			else {
 				// Multiple candidates
 				int bestCandidate = -1;
-				double closest = 1000;
+				double closest = Double.MAX_VALUE;
+				//System.out.println(candidates.size());
+				/*System.out.println("--- Multiple candidates for node "+address.id + " " +
+						address.street + " " + address.house);*/
 				for(int j = 0; j < candidates.size(); j++) {
 					node = candidates.get(j);
-					if(node.street.equalsIgnoreCase(address.streetName)) {
+					/*if(!range.contains(node)) {
+						System.out.println("ERROR!!!!!!!!!");
+					}*/
+					//System.out.println(address.street + " " + address.id);
+					//System.out.println(node.street);
+					if(node.street.equalsIgnoreCase(address.street)) {
 						// Rough estimate, because we are within 25m its okay.
 						/*double distance = Math.sqrt(Math.pow(Math.abs(node.lat - address.lat), 2) 
 								+ Math.pow(Math.abs(node.lon - address.lon), 2));*/
-						double distance = Math.sqrt(Math.pow(node.lat - address.lat, 2) 
-								+ Math.pow(node.lon - address.lon, 2));
+						/*double distance = Math.sqrt(Math.pow(node.lat - address.lat, 2) 
+								+ Math.pow(node.lon - address.lon, 2));*/
+						double distance = calculateDistance(node.lat, node.lon, address.lat, address.lon);
 						if( distance < closest) {
 							bestCandidate = j;
 							closest = distance;
@@ -1422,7 +1560,7 @@ class GraphProcessor {
 				}
 				if(bestCandidate != -1) {
 					node = candidates.get(bestCandidate);
-					node.addHousenumber(address.houseNumber);
+					node.addHousenumber(address.house);
 				}
 			}
 		}
@@ -1430,7 +1568,7 @@ class GraphProcessor {
 		System.out.println("Finding median house numbers");
 		for(int i = 0; i < nodes.size(); i++) {
 			node = nodes.get(i);
-			if(node.houseNumbers.size() != 0) {
+			if(node.houseNumbers != null && node.houseNumbers.size() != 0) {
 				if(node.houseNumbers.size() == 1) {
 					node.house = node.houseNumbers.get(0);
 				}
@@ -1441,10 +1579,11 @@ class GraphProcessor {
 				}
 			}
 			else {
-				node.house = -1;
+				node.house = null;
 			}
 		}
 		
+		int addedAddresses = 0;
 		System.out.println("Writing output");
 		// Export as XML
 		OutputStream out;
@@ -1459,25 +1598,36 @@ class GraphProcessor {
 			
 			for(int i = 0; i < nodes.size(); i++) {
 				node = nodes.get(i);
+				writer.writeCharacters(System.getProperty("line.separator"));
+				writer.writeCharacters("\t");
 				writer.writeStartElement("Node");
 				writer.writeAttribute("id", Long.toString(node.id));
 				writer.writeAttribute("lat", Double.toString(node.lat));
 				writer.writeAttribute("lon", Double.toString(node.lon));
 				if(!node.street.equalsIgnoreCase("")) {
 					writer.writeAttribute("street", node.street);
-					if(node.house != -1) {
-						writer.writeAttribute("house", Integer.toString(node.house));
+					if(node.house != null) {
+						writer.writeAttribute("house", node.house);
+						addedAddresses++;
 					}
+					/*if(node.house != -1) {
+						writer.writeAttribute("house", Integer.toString(node.house));
+					}*/
 				}
 				for(int j = 0; j < node.edges.size(); j++) {
 					edge = node.edges.get(j);
+					writer.writeCharacters(System.getProperty("line.separator"));
+					writer.writeCharacters("\t");
+					writer.writeCharacters("\t");
 					writer.writeStartElement("Edge");
 					writer.writeAttribute("destination", Long.toString(edge.nodeid));
 					writer.writeAttribute("weight", Integer.toString(edge.weight));
 					writer.writeAttribute("bearing", Integer.toString(edge.angle));
+					writer.writeAttribute("type", edge.type);
 					writer.writeEndElement();
 				}
-				
+				writer.writeCharacters(System.getProperty("line.separator"));
+				writer.writeCharacters("\t");
 				writer.writeEndElement();
 			}
 			
@@ -1485,6 +1635,26 @@ class GraphProcessor {
 			writer.flush();
 			writer.close();
 		} catch (FileNotFoundException | XMLStreamException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Distributed addresses onto " + addedAddresses + " nodes");
+		
+		/*
+		 * Write out a .txt of the graph while we have it loaded in anyways
+		 */
+		try {
+			BufferedWriter txt = new BufferedWriter(new FileWriter("addressGraph.txt"));
+			for(int i = 0; i < nodes.size(); i++) {
+				node = nodes.get(i);
+				txt.write(node.id + " " + node.lat + " " + node.lon);
+				txt.newLine();
+			}
+			txt.write("end");
+			txt.flush();
+			txt.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

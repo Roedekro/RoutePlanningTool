@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 
+import Address.IncompleteAdrEdge;
+
 /**
  * External Merge Sort for the various classes of the tool.
  * Set M, B and k using the constructor and sort using the specific methods.
@@ -911,6 +913,581 @@ class ExternalMergeSort {
 			}
 		}
 
+	}
+	
+	/**
+	 * Sort IncompleteEdges by their first node.
+	 * @param input File containing the elements to be sorted.
+	 * @param output Name of desired output file.
+	 */
+	protected void sortIncompleteAdrEdgesByNodeID1(String input, String output) {
+		
+		long numberOfItems = M/sizeOfIncompleteEdge;
+		ObjectInputStream oin = null;
+		ObjectOutputStream oout = null;
+		try {
+			oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input),B));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Comparator<IncompleteAdrEdge> comparator = new Comparator<IncompleteAdrEdge>() {
+			@Override
+			public int compare(IncompleteAdrEdge edge1, IncompleteAdrEdge edge2) {
+				int ret = Long.compare(edge1.nodeID1, edge2.nodeID1);
+				if(ret == 0) {
+					return Long.compare(edge1.nodeID2, edge2.nodeID2);
+				}
+				return ret;
+			}
+		};
+		
+		int pass = 0;
+		files = new LinkedList<String>();
+		
+		// Scan through the input file in chunks of numberOfItems we can hold in internal memory
+		boolean read = true;
+		while(read) {
+			pass++;
+			
+			try {
+				oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("sort"+pass),B));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			files.add("sort"+pass);
+			ArrayList<IncompleteAdrEdge> temp = new ArrayList<IncompleteAdrEdge>();
+			
+			// Read to internal memory
+			for(int i = 0; i < numberOfItems; i++) {
+				try {
+					temp.add((IncompleteAdrEdge) oin.readUnshared());
+					//oin.reset();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					// Reached end of file
+					read = false;
+					numberOfItems = i;
+				}
+			}
+			
+			if(numberOfItems == 0) {
+				files.removeLast();
+			}
+			
+			// Sort in internal memory
+			Collections.sort(temp,comparator);
+			
+			// Output to temporary file
+			for(int i = 0; i < numberOfItems; i++) {
+				try {
+					//System.out.println("Writing: " +temp.get(i).id);
+					oout.writeUnshared(temp.get(i));
+					//oout.reset();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				oout.flush();
+				oout.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			oin.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		// Now that each chunk is sorted and outputted to a file recursively merge these files k at a time
+		int numberOfFiles = files.size();
+		while(true) {
+			
+			ArrayList<ObjectInputStream> inputs = new ArrayList<ObjectInputStream>();
+			HeapObject[] merge = new HeapObject[k+1];
+			
+			if(numberOfFiles > k) {
+				// Merge k files at a time
+				
+				pass++;
+				numberOfFiles = numberOfFiles-k;
+				
+				// Populate the list of input streams
+				for(int i = 0; i < k; i++) {
+					try {
+						inputs.add(new ObjectInputStream(new BufferedInputStream(
+								new FileInputStream(files.remove()),B)));
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}				
+				}
+				
+				// Read in a single element from each buffer
+				IncompleteAdrEdge tempEdge = null;
+				for(int i = 0; i < k; i++) {
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(i).readUnshared();
+						//inputs.get(i).reset();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					merge[i+1] = new HeapObject(tempEdge.nodeID1,i,tempEdge);
+				}
+				
+				// Establish heap order
+				Heap heap = new Heap();
+				heap.setheap(merge, k);
+				
+				// Open outputstream
+				try {
+					oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("sort"+pass),B));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				files.add("sort"+pass);
+				numberOfFiles++;
+				
+				// Now merge them
+				int numberOfLiveStreams = k;
+				HeapObject tempObject = null;
+				int id = 0;
+				while(numberOfLiveStreams > 0) {
+					tempObject = heap.outheap(merge, numberOfLiveStreams);
+					try {
+						oout.writeUnshared(tempObject.object);
+						//oout.reset();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					id = tempObject.id;
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(id).readUnshared();
+						//inputs.get(id).reset();
+						// Below wont execute if EOF detected
+						tempObject = new HeapObject(tempEdge.nodeID1,id,tempEdge);
+						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						// Catch end of file
+						numberOfLiveStreams--;
+						try {
+							inputs.get(id).close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				
+				// Cleanup
+				try {
+					oout.flush();
+					oout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}	
+			}
+			else {
+				// Merge final files, clean up and return
+				
+				// Populate the list of input streams
+				for(int i = 0; i < numberOfFiles; i++) {
+					try {
+						inputs.add(new ObjectInputStream(new BufferedInputStream(
+								new FileInputStream(files.remove()),B)));
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}				
+				}
+				
+				// Read in a single element from each buffer
+				IncompleteAdrEdge tempEdge = null;
+				for(int i = 0; i < numberOfFiles; i++) {
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(i).readUnshared();
+						//inputs.get(i).reset();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					merge[i+1] = new HeapObject(tempEdge.nodeID1,i,tempEdge);
+				}
+				
+				// Establish heap order
+				Heap heap = new Heap();
+				heap.setheap(merge, numberOfFiles);
+				
+				// Open outputstream
+				try {
+					oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(output),B));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}				
+				
+				// Now merge them
+				int numberOfLiveStreams = numberOfFiles;
+				HeapObject tempObject = null;
+				int id = 0;
+				while(numberOfLiveStreams > 0) {
+					tempObject = heap.outheap(merge, numberOfLiveStreams);
+					try {
+						oout.writeUnshared(tempObject.object);
+						//oout.reset();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					id = tempObject.id;
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(id).readUnshared();
+						//inputs.get(id).reset();
+						// Below wont execute if EOF detected
+						tempObject = new HeapObject(tempEdge.nodeID1,id,tempEdge);
+						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						// Catch end of file
+						numberOfLiveStreams--;
+						try {
+							inputs.get(id).close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				
+				// Cleanup
+				try {
+					oout.flush();
+					oout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				// Delete all the files we have used throughout the sorting
+				File f;
+				for(int i = 1; i <= pass; i++) {
+					f= new File("sort"+i);
+					try {
+						Files.delete(f.toPath());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				// Done!
+				return;
+			}
+		}
+
+	}
+	
+	/**
+	 * Sort IncompleteAdrEdges by their second node.
+	 * @param input File containing the elements to be sorted.
+	 * @param output Name of desired output file.
+	 */
+	protected void sortIncompleteAdrEdgesByNodeID2(String input, String output) {
+		
+		long numberOfItems = M/sizeOfIncompleteEdge;
+		ObjectInputStream oin = null;
+		ObjectOutputStream oout = null;
+		try {
+			oin = new ObjectInputStream(new BufferedInputStream(new FileInputStream(input),B));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Comparator<IncompleteAdrEdge> comparator = new Comparator<IncompleteAdrEdge>() {
+			@Override
+			public int compare(IncompleteAdrEdge edge1, IncompleteAdrEdge edge2) {
+				int ret = Long.compare(edge1.nodeID2, edge2.nodeID2);
+				if(ret == 0) {
+					return Long.compare(edge1.nodeID1, edge2.nodeID1);
+				}
+				return ret;
+			}
+		};
+		
+		int pass = 0;
+		files = new LinkedList<String>();
+		
+		// Scan through the input file in chunks of numberOfItems we can hold in internal memory
+		boolean read = true;
+		while(read) {
+			pass++;
+			
+			try {
+				oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("sort"+pass),B));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			files.add("sort"+pass);
+			ArrayList<IncompleteAdrEdge> temp = new ArrayList<IncompleteAdrEdge>();
+			
+			// Read to internal memory
+			for(int i = 0; i < numberOfItems; i++) {
+				try {
+					temp.add((IncompleteAdrEdge) oin.readUnshared());
+					//oin.reset();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					// Reached end of file
+					read = false;
+					numberOfItems = i;
+				}
+			}
+			
+			if(numberOfItems == 0) {
+				files.removeLast();
+			}
+			
+			// Sort in internal memory
+			Collections.sort(temp,comparator);
+			
+			// Output to temporary file
+			for(int i = 0; i < numberOfItems; i++) {
+				try {
+					//System.out.println("Writing: " +temp.get(i).id);
+					oout.writeUnshared(temp.get(i));
+					//oout.reset();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				oout.flush();
+				oout.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		try {
+			oin.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		// Now that each chunk is sorted and outputted to a file recursively merge these files k at a time
+		int numberOfFiles = files.size();
+		int ecounter = 0;
+		while(true) {
+			
+			ArrayList<ObjectInputStream> inputs = new ArrayList<ObjectInputStream>();
+			HeapObject[] merge = new HeapObject[k+1];
+			
+			if(numberOfFiles > k) {
+				// Merge k files at a time
+				
+				pass++;
+				numberOfFiles = numberOfFiles-k;
+				
+				// Populate the list of input streams
+				for(int i = 0; i < k; i++) {
+					try {
+						inputs.add(new ObjectInputStream(new BufferedInputStream(
+								new FileInputStream(files.remove()),B)));
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}				
+				}
+				
+				// Read in a single element from each buffer
+				IncompleteAdrEdge tempEdge = null;
+				for(int i = 0; i < k; i++) {
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(i).readUnshared();
+						//inputs.get(i).reset();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					merge[i+1] = new HeapObject(tempEdge.nodeID2,i,tempEdge);
+				}
+				
+				// Establish heap order
+				Heap heap = new Heap();
+				heap.setheap(merge, k);
+				
+				// Open outputstream
+				try {
+					oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("sort"+pass),B));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				files.add("sort"+pass);
+				numberOfFiles++;
+				
+				// Now merge them
+				int numberOfLiveStreams = k;
+				HeapObject tempObject = null;
+				int id = 0;
+				while(numberOfLiveStreams > 0) {
+					tempObject = heap.outheap(merge, numberOfLiveStreams);
+					try {
+						ecounter++;
+						oout.writeUnshared(tempObject.object);
+						//oout.reset();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					id = tempObject.id;
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(id).readUnshared();
+						//inputs.get(id).reset();
+						// Below wont execute if EOF detected
+						tempObject = new HeapObject(tempEdge.nodeID2,id,tempEdge);
+						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						// Catch end of file
+						numberOfLiveStreams--;
+						try {
+							inputs.get(id).close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				
+				// Cleanup
+				try {
+					oout.flush();
+					oout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}	
+			}
+			else {
+				// Merge final files, clean up and return
+				
+				// Populate the list of input streams
+				for(int i = 0; i < numberOfFiles; i++) {
+					try {
+						inputs.add(new ObjectInputStream(new BufferedInputStream(
+								new FileInputStream(files.remove()),B)));
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}				
+				}
+				
+				// Read in a single element from each buffer
+				IncompleteAdrEdge tempEdge = null;
+				for(int i = 0; i < numberOfFiles; i++) {
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(i).readUnshared();
+						//inputs.get(i).reset();
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					merge[i+1] = new HeapObject(tempEdge.nodeID2,i,tempEdge);
+				}
+				
+				// Establish heap order
+				Heap heap = new Heap();
+				heap.setheap(merge, numberOfFiles);
+				
+				// Open outputstream
+				try {
+					oout = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(output),B));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}				
+				
+				// Now merge them
+				int numberOfLiveStreams = numberOfFiles;
+				HeapObject tempObject = null;
+				int id = 0;
+				while(numberOfLiveStreams > 0) {
+					tempObject = heap.outheap(merge, numberOfLiveStreams);
+					try {
+						ecounter++;
+						oout.writeUnshared(tempObject.object);
+						//oout.reset();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					id = tempObject.id;
+					try {
+						tempEdge = (IncompleteAdrEdge) inputs.get(id).readUnshared();
+						//inputs.get(id).reset();
+						// Below wont execute if EOF detected
+						tempObject = new HeapObject(tempEdge.nodeID2,id,tempEdge);
+						heap.inheap(merge, tempObject, numberOfLiveStreams-1);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						// Catch end of file
+						numberOfLiveStreams--;
+						try {
+							inputs.get(id).close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+				
+				// Cleanup
+				try {
+					oout.flush();
+					oout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				// Delete all the files we have used throughout the sorting
+				File f;
+				for(int i = 1; i <= pass; i++) {
+					f= new File("sort"+i);
+					try {
+						Files.delete(f.toPath());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				// Done!
+				//System.out.println(ecounter);
+				return;
+			}
+			//System.out.println(ecounter);
+		}
+		
 	}
 	
 }
